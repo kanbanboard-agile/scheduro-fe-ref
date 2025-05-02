@@ -1,34 +1,40 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect} from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
-const Navbar = ({ className = "" }) => {
+const Navbar = ({ className }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
 
-  const toggleMenu = () => setIsMenuOpen(prev => !prev);
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  const handleScroll = useCallback(() => {
-    const sections = ["about", "feature", "faq", "download"];
-    let currentSection = "home";
+  const handleScroll = () => {
+    const about = document.getElementById("about");
+    const feature = document.getElementById("feature");
+    const faq = document.getElementById("faq");
+    const download = document.getElementById("download");
 
-    for (const section of sections) {
-      const element = document.getElementById(section);
-      if (element && window.scrollY >= element.offsetTop - 100) {
-        currentSection = section;
-      }
+    if (window.scrollY >= (download?.offsetTop || 0) - 100) {
+      setActiveSection("download");
+    } else if (window.scrollY >= (faq?.offsetTop || 0) - 100) {
+      setActiveSection("faq");
+    } else if (window.scrollY >= (feature?.offsetTop || 0) - 100) {
+      setActiveSection("feature");
+    } else if (window.scrollY >= (about?.offsetTop || 0) - 100) {
+      setActiveSection("about");
+    } else {
+      setActiveSection("home");
     }
-    setActiveSection(currentSection);
-  }, []);
+  };
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [handleScroll]);
+  }, []);
 
   const handleNavClick = (sectionId) => {
     const element = document.getElementById(sectionId);
@@ -40,42 +46,11 @@ const Navbar = ({ className = "" }) => {
   };
 
   const linkClass = (section) =>
-    `font-poppins transition-colors cursor-pointer ${activeSection === section
-      ? "text-[#6387CE] font-bold"
-      : "text-black hover:text-[#6387CE]"
+    `font-poppins transition-colors cursor-pointer ${
+      activeSection === section
+        ? "text-[#6387CE] font-bold"
+        : "text-black hover:text-[#6387CE]"
     }`;
-
-  const NavLinks = ({ isMobile = false }) => (
-    <ul className={`flex ${isMobile ? "flex-col space-y-4 mb-4" : "items-center"}`}>
-      <li className="mx-6 md:mx-6">
-        <Link href="/" className={linkClass("home")} onClick={() => setIsMenuOpen(false)}>
-          Home
-        </Link>
-      </li>
-      {["about", "feature", "faq", "download"].map((section) => (
-        <li key={section} className="mx-6 md:mx-6">
-          <button onClick={() => handleNavClick(section)} className={linkClass(section)}>
-            {section.charAt(0).toUpperCase() + section.slice(1)}
-          </button>
-        </li>
-      ))}
-    </ul>
-  );
-
-  const AuthButtons = ({ isMobile = false }) => (
-    <div className={`flex ${isMobile ? "flex-col items-start space-y-3" : "items-center space-x-4 ml-8 mr-20"}`}>
-      <Link href="/login">
-        <Button className="bg-[#6387CE] text-white px-6 md:px-10 py-3 md:py-6 rounded-full shadow-md hover:bg-[#4F6EC1]">
-          <span className="text-base font-medium">Login</span>
-        </Button>
-      </Link>
-      <Link href="/register">
-        <Button className="border-2 border-[#6387CE] text-[#6387CE] bg-transparent px-6 md:px-10 py-3 md:py-6 rounded-full shadow-md hover:bg-[#4F6EC1] hover:text-white">
-          <span className="text-base font-medium">Register</span>
-        </Button>
-      </Link>
-    </div>
-  );
 
   return (
     <nav className={`bg-gray-50 py-4 px-5 flex items-center justify-between mt-5 sticky top-0 z-50 ${className}`}>
@@ -91,9 +66,9 @@ const Navbar = ({ className = "" }) => {
         <span className="text-[19px] md:text-[26px] font-bold ml-2 font-poppins">Scheduro</span>
       </div>
 
-      {/* Mobile Toggle */}
+      {/* Mobile Toggle Button */}
       <div className="flex items-center gap-3 md:hidden">
-        <button className="p-2" onClick={toggleMenu}>
+        <button className="md:hidden flex items-center p-2" onClick={toggleMenu}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -111,19 +86,83 @@ const Navbar = ({ className = "" }) => {
       </div>
 
       {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-white p-4 shadow-md z-50 border-t border-gray-100">
-          <NavLinks isMobile />
-          <AuthButtons isMobile />
+      <div className={`md:hidden ${isMenuOpen ? "block" : "hidden"} absolute top-full left-0 right-0 bg-white p-4 shadow-md z-50 border-t border-gray-100`}>
+        <ul className="flex flex-col space-y-4 mb-4">
+          <li>
+            <Link href="/" className={linkClass("home")} onClick={() => setIsMenuOpen(false)}>Home</Link>
+          </li>
+          <li>
+            <button onClick={() => handleNavClick("about")} className={linkClass("about")}>About</button>
+          </li>
+          <li>
+            <button onClick={() => handleNavClick("feature")} className={linkClass("feature")}>Features</button>
+          </li>
+          <li>
+            <button onClick={() => handleNavClick("faq")} className={linkClass("faq")}>FAQ</button>
+          </li>
+          <li>
+            <button onClick={() => handleNavClick("download")} className={linkClass("download")}>Download</button>
+          </li>
+        </ul>
+        
+        <div className="flex flex-col items-start space-y-3">
+          <Link href="/login">
+            <Button className="bg-[#6387CE] text-white px-6 py-3 rounded-full shadow-md hover:bg-[#4F6EC1] cursor-pointer">
+              <span className="text-base font-medium">Login</span>
+            </Button>
+          </Link>
+          <Link href="/register">
+            <Button className="border-2 border-[#6387CE] text-[#6387CE] bg-transparent px-6 py-3 rounded-full shadow-md hover:bg-[#4F6EC1] hover:text-white cursor-pointer">
+              <span className="text-base font-medium">Register</span>
+            </Button>
+          </Link>
         </div>
-      )}
+      </div>
 
       {/* Desktop Menu */}
       <div className="hidden md:flex flex-1 items-center justify-between">
         <div className="flex-1 flex justify-center">
-          <NavLinks />
+          <ul className="flex items-center">
+            <li className="mx-6">
+              <Link href="/" className={linkClass("home")}>
+                Home
+              </Link>
+            </li>
+            <li className="mx-6">
+              <button onClick={() => handleNavClick("about")} className={linkClass("about")}>
+                About
+              </button>
+            </li>
+            <li className="mx-6">
+              <button onClick={() => handleNavClick("feature")} className={linkClass("feature")}>
+                Features
+              </button>
+            </li>
+            <li className="mx-6">
+              <button onClick={() => handleNavClick("faq")} className={linkClass("faq")}>
+                FAQ
+              </button>
+            </li>
+            <li className="mx-6">
+              <button onClick={() => handleNavClick("download")} className={linkClass("download")}>
+                Download
+              </button>
+            </li>
+          </ul>
         </div>
-        <AuthButtons />
+
+        <div className="ml-8 mr-20 flex items-center space-x-4">
+          <Link href="/login">
+            <Button className="bg-[#6387CE] text-white px-10 py-6 rounded-full shadow-md hover:bg-[#4F6EC1] cursor-pointer">
+              <span className="text-base font-medium">Login</span>
+            </Button>
+          </Link>
+          <Link href="/register">
+            <Button className="border-2 border-[#6387CE] text-[#6387CE] bg-transparent px-10 py-6 rounded-full shadow-md hover:bg-[#4F6EC1] hover:text-white cursor-pointer">
+              <span className="text-base font-medium">Register</span>
+            </Button>
+          </Link>
+        </div>
       </div>
     </nav>
   );

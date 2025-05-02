@@ -110,13 +110,13 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-[#6387CE] text-white font-medium py-2 rounded-md hover:bg-[#4058A4] transition-all duration-300 cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="w-full bg-[#4F6EC1] text-white font-medium py-2 rounded-md hover:bg-[#6387CE] transition-all duration-300 cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
           aria-label="Log in"
         >
           {loading ? "Loading..." : "Login"}
         </button>
 
-        <div className="flex items-center justify-center mt-4 ">
+        <div className="flex items-center justify-center">
           <p className="text-sm text-gray-500">
             Or
           </p>
