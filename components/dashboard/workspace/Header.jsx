@@ -1,6 +1,8 @@
 "use client";
-import { Building2, Pencil, Trash } from "lucide-react"; // Tambahkan Trash
-import { Button } from "@/components/ui/button"; // Gunakan Button dari shadcn
+
+import { useEffect, useState } from "react";
+import { Building2, Pencil, Trash } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogTrigger,
@@ -9,18 +11,34 @@ import {
   DialogFooter,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog"; // Import Dialog dari shadcn
-import { useState } from "react";
-import { updateWorkspace, deleteWorkspace } from "@/lib/api/workspace"; // Pastikan deleteWorkspace diimpor
+} from "@/components/ui/dialog";
 import { toast, Toaster } from "sonner";
+import { updateWorkspace, deleteWorkspace } from "@/lib/api/workspace";
 
 const Header = ({ workspace, onUpdate }) => {
+  const [randomImage, setRandomImage] = useState("");
+  const [avatar, setAvatar] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editedName, setEditedName] = useState(workspace?.name || "Workspace");
-  const [editedPriority, setEditedPriority] = useState(
-    workspace?.priority || "Normal"
-  );
+  const [editedPriority, setEditedPriority] = useState(workspace?.priority || "Normal");
+
+  useEffect(() => {
+    const savedAvatar = localStorage.getItem(`workspace-avatar-${workspace.id}`);
+    if (savedAvatar) setAvatar(savedAvatar);
+
+    const randomIndex = Math.floor(Math.random() * 5) + 1;
+    setRandomImage(`/images/${randomIndex}.png`);
+  }, [workspace.id]);
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setAvatar(imageUrl);
+      localStorage.setItem(`workspace-avatar-${workspace.id}`, imageUrl);
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -31,7 +49,6 @@ const Header = ({ workspace, onUpdate }) => {
       });
 
       if (response.success) {
-        console.log("Workspace updated successfully:", response.data);
         if (editedName !== workspace.name) {
           toast.success("Workspace name updated! Redirecting...");
           setTimeout(() => {
@@ -46,11 +63,9 @@ const Header = ({ workspace, onUpdate }) => {
           window.location.reload();
         }
       } else {
-        console.error("Failed to update workspace:", response.message);
         toast.error("Failed to update workspace.");
       }
     } catch (error) {
-      console.error("Error updating workspace:", error);
       toast.error("An error occurred while updating the workspace.");
     } finally {
       setIsEditing(false);
@@ -60,116 +75,118 @@ const Header = ({ workspace, onUpdate }) => {
   const handleDelete = async () => {
     try {
       const response = await deleteWorkspace({ id: workspace.id });
-
       if (response.success) {
         toast.success("Workspace deleted successfully!");
         setTimeout(() => {
           window.location.href = "/dashboard";
         }, 1000);
       } else {
-        console.error("Failed to delete workspace:", response.message);
         toast.error("Failed to delete workspace.");
       }
     } catch (error) {
-      console.error("Error deleting workspace:", error);
       toast.error("An error occurred while deleting the workspace.");
     }
   };
 
   return (
-    <header className="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-4 md:p-6 shadow-lg">
+    <div className="relative w-full">
       <Toaster position="top-center" theme="light" richColors />
-      <div className="container mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          {/* Left side - Workspace info */}
-          <div className="flex items-center space-x-4">
-            <div className="bg-gray-700 p-2 rounded-xl shadow-md">
-              <Building2 className="h-6 w-6 text-blue-400" />
+
+      {/* Cover */}
+      <div className="w-full h-24 sm:h-32 md:h-40 lg:h-48 overflow-hidden flex items-center">
+        <img
+          className="w-full h-full object-cover"
+          src={workspace.cover || randomImage}
+          alt={workspace.name}
+        />
+      </div>
+
+      {/* Avatar, Name, Actions */}
+      <div className="relative px-4 sm:px-6 flex items-center gap-4 -mt-10 md:-mt-12">
+        {/* Avatar */}
+        <div className="flex-shrink-0 relative">
+          {avatar ? (
+            <img
+              src={avatar}
+              alt="Avatar"
+              className="h-20 w-20 md:h-24 md:w-24 rounded-full ring-4 ring-white object-cover shadow-md"
+            />
+          ) : (
+            <div className="h-20 w-20 md:h-24 md:w-24 flex items-center justify-center rounded-full bg-[#354273] text-white font-bold text-3xl ring-4 ring-white shadow-md">
+              {workspace.name?.charAt(0).toUpperCase()}
             </div>
+          )}
+          <label className="absolute bottom-0 right-0 bg-white p-1 rounded-full shadow cursor-pointer">
+            <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+            <Pencil className="w-4 h-4 text-gray-700" />
+          </label>
+        </div>
+
+        {/* Name & Buttons */}
+        <div className="flex flex-col gap-2 mt-12 md:mt-14">
+          {isEditing ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={editedName}
+                onChange={(e) => setEditedName(e.target.value)}
+                className="text-xl md:text-2xl font-semibold tracking-tight bg-white text-gray-900 border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                autoFocus
+              />
+              <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-white">
+                Save
+              </Button>
+              <Button onClick={() => setIsEditing(false)} className="bg-gray-500 text-white">
+                Cancel
+              </Button>
+            </div>
+          ) : (
             <div className="flex items-center gap-3">
-              {isEditing ? (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={editedName}
-                    onChange={(e) => setEditedName(e.target.value)}
-                    className="text-2xl md:text-3xl font-semibold tracking-tight bg-gray-800 text-white border border-gray-600 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                    autoFocus
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700 text-white border-none rounded-lg px-4 py-1.5 font-medium"
-                    onClick={handleSave}
-                  >
-                    Save
+              <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold">{editedName}</h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsEditing(true)}
+                className="text-yellow-500 hover:bg-gray-200"
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-red-500 hover:bg-gray-200">
+                    <Trash className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-gray-600 hover:bg-gray-700 text-white border-none rounded-lg px-4 py-1.5 font-medium"
-                    onClick={() => setIsEditing(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
-                    {editedName}
-                  </h1>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full h-9 w-9 hover:bg-gray-700 text-yellow-400 transition-colors"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-full h-9 w-9 hover:bg-gray-700 text-red-400 transition-colors"
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-gray-800 text-white border border-gray-700 rounded-xl">
-                      <DialogHeader>
-                        <DialogTitle>Confirm Deletion</DialogTitle>
-                        <DialogDescription className="text-gray-300">
-                          Are you sure you want to delete this workspace? This action cannot be undone.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter>
-                        <Button
-                          variant="outline"
-                          className="bg-gray-600 hover:bg-gray-700 text-white border-none"
-                          onClick={() => setIsDialogOpen(false)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          className="bg-red-600 hover:bg-red-700 text-white"
-                          onClick={async () => {
-                            await handleDelete();
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              )}
+                </DialogTrigger>
+                <DialogContent className="bg-white text-black border border-gray-300 rounded-xl">
+                  <DialogHeader>
+                    <DialogTitle>Confirm Deletion</DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to delete this workspace? This action cannot be undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      className="bg-gray-200 hover:bg-gray-300"
+                      onClick={() => setIsDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                      onClick={handleDelete}
+                    >
+                      Delete
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
-          </div>
+          )}
         </div>
       </div>
-    </header>
+    </div>
   );
 };
 
