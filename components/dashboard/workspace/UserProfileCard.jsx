@@ -1,76 +1,22 @@
-"use client";
-import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ToDoListCard } from "./ToDoList";
-import { updateUser } from "@/lib/api/user";
+'use client';
+import { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useRouter } from 'next/navigation';
 
-export function UserProfileCard({ isLoading, user, onUpdate }) {
+export function UserProfileCard({ isLoading, user }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
-    avatar: null,
-  });
-  const [updateLoading, setUpdateLoading] = useState(false);
-  const [updateError, setUpdateError] = useState(null);
-
-  useEffect(() => {
-    setFormData({
-      name: user?.name || "",
-      email: user?.email || "",
-      avatar: null,
-    });
-  }, [user]);
-
-  const handleInputChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === "avatar") {
-      setFormData((prev) => ({ ...prev, avatar: files[0] }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
-  };
+  const [errorMsg, setErrorMsg] = useState(null);
+  const router = useRouter();
 
   const handleEditClick = () => {
-    setIsEditing(true);
+    setErrorMsg('Features is coming soon!');
+    setTimeout(() => setErrorMsg(null), 3000);
   };
 
-  const handleCancelClick = () => {
-    setIsEditing(false);
-    setUpdateError(null);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setUpdateLoading(true);
-    setUpdateError(null);
-
-    try {
-      const payload = new FormData();
-      payload.append("name", formData.name);
-      payload.append("email", formData.email);
-      if (formData.avatar) {
-        payload.append("avatar", formData.avatar);
-      }
-
-      const response = await updateUser(user.id, payload);
-      if (!response.success) {
-        throw new Error(response.message || "Failed to update profile");
-      }
-
-      setIsEditing(false);
-      setIsOpen(false);
-
-      if (onUpdate) {
-        onUpdate();
-      }
-    } catch (error) {
-      setUpdateError(error.message);
-    } finally {
-      setUpdateLoading(false);
-    }
+  const handleResetPassword = () => {
+    const email = encodeURIComponent(user?.email || '');
+    router.push(`/forget?email=${email}`);
   };
 
   // Mobile profile modal
@@ -93,10 +39,7 @@ export function UserProfileCard({ isLoading, user, onUpdate }) {
                   {Array(3)
                     .fill(0)
                     .map((_, index) => (
-                      <li
-                        key={index}
-                        className="flex items-center p-2 bg-gray-100 rounded-md shadow space-x-3"
-                      >
+                      <li key={index} className="flex items-center p-2 bg-gray-100 rounded-md shadow space-x-3">
                         <Skeleton className="w-8 h-8 rounded-full" />
                         <div className="flex flex-col space-y-2">
                           <Skeleton className="h-4 w-40" />
@@ -107,102 +50,38 @@ export function UserProfileCard({ isLoading, user, onUpdate }) {
                 </ul>
               </div>
             </>
-          ) : isEditing ? (
-            <form onSubmit={handleSubmit}>
-              <div className="text-center border-b pb-4 relative">
-                <button
-                  type="button"
-                  className="absolute top-0 right-0 text-gray-500 hover:text-gray-700"
-                  onClick={() => setIsOpen(false)}
-                >
-                  ✖
-                </button>
-                <h2 className="text-lg font-medium mb-4">Edit Profile</h2>
-              </div>
-              <div className="mb-4">
-                <label className="block text-left mb-1 font-medium" htmlFor="name">
-                  Name
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-left mb-1 font-medium" htmlFor="email">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-left mb-1 font-medium" htmlFor="avatar">
-                  Avatar
-                </label>
-                <input
-                  id="avatar"
-                  name="avatar"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleInputChange}
-                  className="w-full"
-                />
-              </div>
-              {updateError && (
-                <p className="text-red-600 mb-4 text-left">{updateError}</p>
-              )}
-              <div className="flex justify-end space-x-2">
-                <button
-                  type="button"
-                  onClick={handleCancelClick}
-                  className="px-4 py-2 border rounded"
-                  disabled={updateLoading}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded"
-                  disabled={updateLoading}
-                >
-                  {updateLoading ? "Saving..." : "Save"}
-                </button>
-              </div>
-            </form>
           ) : (
             <>
               <div className="text-center border-b pb-4 relative">
-                <button
-                  className="absolute top-0 right-0 text-gray-500 hover:text-gray-700"
-                  onClick={() => setIsOpen(false)}
-                >
+                <button className="absolute top-0 right-0 text-gray-500 hover:text-gray-700" onClick={() => setIsOpen(false)} aria-label="Close profile modal">
                   ✖
                 </button>
                 <img
-                  src="https://res.cloudinary.com/dy8fe8tbe/image/upload/v1742238102/user_profile_grka1i.svg"
-                  className="w-14 h-14 mx-auto"
-                  alt="User Profile"
+                  src={user?.avatar || 'https://res.cloudinary.com/dy8fe8tbe/image/upload/v1742238102/user_profile_grka1i.svg'}
+                  className="w-14 h-14 mx-auto rounded-full"
+                  alt="User avatar"
+                  onError={(e) => {
+                    console.error('Failed to load avatar:', user?.avatar);
+                    e.target.src = 'https://res.cloudinary.com/dy8fe8tbe/image/upload/v1742238102/user_profile_grka1i.svg';
+                  }}
                 />
-                <p className="text-l font-medium">{user.name}</p>
-                <p className="text-sm text-gray-500">{user.email}</p>
-                <button
-                  onClick={handleEditClick}
-                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
-                >
-                  Edit Profile
-                </button>
+                <p className="text-lg font-medium mt-2">{user?.name || 'N/A'}</p>
+                <p className="text-sm text-gray-500">{user?.email || 'N/A'}</p>
+                {errorMsg ? (
+                  <p className="text-red-600 mt-4 text-sm">{errorMsg}</p>
+                ) : (
+                  <div className="mt-4 flex flex-col space-y-3">
+                    <button onClick={handleEditClick} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                      Edit Profile
+                    </button>
+                    <button
+                      onClick={handleResetPassword}
+                      className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-md"
+                    >
+                      Reset Password
+                    </button>
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -223,16 +102,20 @@ export function UserProfileCard({ isLoading, user, onUpdate }) {
         ) : (
           <>
             <img
-              src="https://res.cloudinary.com/dy8fe8tbe/image/upload/v1742238102/user_profile_grka1i.svg"
-              className="w-14 h-14 mx-auto"
-              alt="User Profile"
+              src={user?.avatar || 'https://res.cloudinary.com/dy8fe8tbe/image/upload/v1742238102/user_profile_grka1i.svg'}
+              className="w-14 h-14 mx-auto rounded-full cursor-pointer"
+              alt="User avatar"
               onClick={() => setIsOpen(true)}
               role="button"
               aria-label="Open profile"
               tabIndex={0}
+              onError={(e) => {
+                console.error('Failed to load avatar:', user?.avatar);
+                e.target.src = 'https://res.cloudinary.com/dy8fe8tbe/image/upload/v1742238102/user_profile_grka1i.svg';
+              }}
             />
-            <p className="text-l font-medium mt-2">{user.name}</p>
-            <p className="text-sm text-gray-500">{user.email}</p>
+            <p className="text-lg font-medium mt-2">{user?.name || 'N/A'}</p>
+            <p className="text-sm text-gray-500">{user?.email || 'N/A'}</p>
           </>
         )}
       </Card>

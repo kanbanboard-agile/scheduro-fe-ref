@@ -1,9 +1,25 @@
-// app/login/page.jsx
-"use client";
-import IllustrationSection from "@/components/auth/IllustrationSection";
-import LoginForm from "@/components/auth/LoginForm";
+'use client';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import IllustrationSection from '@/components/auth/IllustrationSection';
+import LoginForm from '@/components/auth/LoginForm';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function LoginPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirect immediately when authenticated
+    if (!loading && user) {
+      router.replace('/dashboard'); // Use `replace` to prevent going back to login
+    }
+  }, [user, loading, router]);
+
+  if (loading || user) {
+    // Prevent any UI flash of login page if user is already authenticated
+    return null;
+  }
 
   return (
     <div className="flex min-h-screen w-full">

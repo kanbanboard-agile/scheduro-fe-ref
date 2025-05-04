@@ -17,7 +17,7 @@ import { Button } from '../ui/button';
 import { WorkspaceForm } from './workspace/WorkspaceForm';
 
 export function DashboardSidebar() {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -58,16 +58,27 @@ export function DashboardSidebar() {
     setWorkspaces((prev) => [...prev, newWorkspace]);
   }, []);
 
-  const handleLogout = useCallback(async () => {
+  // Updated logout handler with immediate redirect
+  const handleLogout = useCallback(() => {
     try {
+      // Remove all cookies
       Object.keys(Cookies.get()).forEach((cookieName) => {
         Cookies.remove(cookieName);
       });
-      router.push('/login');
+
+      // Update auth context
+      setUser(null);
+
+      // Immediate redirect to home page
+      window.location.href = '/';
     } catch (error) {
       console.error('Logout error:', error);
+      // Still redirect to home page even if there's an error
+      window.location.href = '/';
+    } finally {
+      setShowLogoutConfirm(false);
     }
-  }, [router]);
+  }, [setUser]);
 
   const confirmLogout = useCallback(() => {
     setShowLogoutConfirm(true);
@@ -119,7 +130,7 @@ export function DashboardSidebar() {
       <nav className={cn('flex flex-col w-72 bg-white overflow-y-auto border-r transition-all duration-300 ease-in-out', isMobileOpen ? 'fixed inset-0 z-30 translate-x-0 shadow-xl' : 'fixed -translate-x-full lg:static lg:translate-x-0')}>
         <ul className="flex flex-col gap-y-8 pl-6">
           {/* Logo */}
-          <li leagues="mt-2">
+          <li className="mt-2">
             <Link href="/" className={cn('group flex items-center gap-x-3 rounded-md p-3 text-xl font-extrabold leading-relaxed pl-1 mt-5', pathname === '/' ? 'bg-[#CCDAF1] text-blue-800' : 'text-foreground hover:bg-gray-100')}>
               <Image width={40} height={40} src="https://res.cloudinary.com/dy8fe8tbe/image/upload/v1742279884/logo_ovq2n3.svg" className="w-10 h-10" alt="Scheduro Logo" />
               <span className="leading-none">Scheduro</span>
@@ -136,7 +147,7 @@ export function DashboardSidebar() {
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard/tasks" className={cn('group flex gap-x-3 rounded-md p-3 text-sm font-semibold leading-relaxed', isTasksActive ? 'bg-[#CCDAF1] postęp-800' : 'text-foreground hover:bg-gray-100')}>
+                <Link href="/dashboard/tasks" className={cn('group flex gap-x-3 rounded-md p-3 text-sm font-semibold leading-relaxed', isTasksActive ? 'bg-[#CCDAF1] text-blue-800' : 'text-foreground hover:bg-gray-100')}>
                   <Folder className="w-6 h-6" />
                   My Tasks
                 </Link>
@@ -207,7 +218,7 @@ export function DashboardSidebar() {
                 Cancel
               </Button>
               <Button variant="destructive" onClick={handleLogout}>
-                Logout
+                Yes
               </Button>
             </div>
           </div>

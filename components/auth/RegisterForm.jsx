@@ -43,9 +43,7 @@ export default function RegisterForm() {
     }
 
     const phoneRegex = /^\+?\d{7,15}$/;
-    if (!formData.number) {
-      newErrors.number = 'Phone number is required';
-    } else if (!phoneRegex.test(formData.number)) {
+    if (formData.number && !phoneRegex.test(formData.number)) {
       newErrors.number = 'Please enter a valid phone number (7-15 digits)';
     }
 
@@ -163,7 +161,7 @@ export default function RegisterForm() {
           name="name"
           value={formData.name}
           onChange={handleChange}
-          placeholder="Enter name"
+          placeholder="Enter your full name"
           error={errors.name}
           required
           aria-invalid={errors.name ? 'true' : 'false'}
@@ -189,9 +187,8 @@ export default function RegisterForm() {
           name="number"
           value={formData.number}
           onChange={handleChange}
-          placeholder="089654567877"
+          placeholder="e.g., +6281234567890 (Optional)"
           error={errors.number}
-          required
           aria-invalid={errors.number ? 'true' : 'false'}
           aria-describedby={errors.number ? 'number-error' : undefined}
         />
@@ -218,7 +215,7 @@ export default function RegisterForm() {
           name="confirmPassword"
           value={formData.confirmPassword}
           onChange={handleChange}
-          placeholder="Confirm password"
+          placeholder="Confirm your password"
           error={errors.confirmPassword}
           showToggle
           isVisible={showConfirmPassword}
@@ -266,6 +263,16 @@ export default function RegisterForm() {
           {loading ? 'Loading...' : 'Register'}
         </button>
       </form>
+      <Link href="/">
+        <button
+          className="fixed bottom-6 right-6 bg-primary text-white p-4 rounded-full shadow-lg hover:bg-primary-dark transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          aria-label="Back to Home"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+        </button>
+      </Link>
     </AuthFormWrapper>
   );
 }

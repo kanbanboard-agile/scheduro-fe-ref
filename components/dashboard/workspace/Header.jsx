@@ -9,10 +9,21 @@ import { updateWorkspace, deleteWorkspace } from '@/lib/api/workspace';
 
 // Memoized Avatar component to prevent unnecessary re-renders
 const WorkspaceAvatar = memo(({ name, avatar, onUpload, workspaceId }) => {
+  console.log('Avatar URL in WorkspaceAvatar:', avatar);
+  const [imgError, setImgError] = useState(false);
+
   return (
     <div className="flex-shrink-0 relative">
-      {avatar ? (
-        <img src={avatar} alt="Avatar" className="h-20 w-20 md:h-24 md:w-24 rounded-full ring-4 ring-white object-cover shadow-md" />
+      {avatar && !imgError ? (
+        <img
+          src={avatar}
+          alt={`${name} Avatar`}
+          className="h-20 w-20 md:h-24 md:w-24 rounded-full ring-4 ring-white object-cover shadow-md"
+          onError={(e) => {
+            console.error('Image failed to load:', avatar);
+            setImgError(true);
+          }}
+        />
       ) : (
         <div className="h-20 w-20 md:h-24 md:w-24 flex items-center justify-center rounded-full bg-[#354273] text-white font-bold text-3xl ring-4 ring-white shadow-md">{name?.charAt(0).toUpperCase()}</div>
       )}
@@ -50,22 +61,21 @@ DeleteDialog.displayName = 'DeleteDialog';
 
 // Main Header component with performance optimizations
 const Header = ({ workspace, onUpdate }) => {
-  // Use lazy initialization for state to avoid unnecessary calculations during re-renders
   const [randomImage, setRandomImage] = useState('');
-  const [avatar, setAvatar] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(`workspace-avatar-${workspace.id}`) || null;
-    }
-    return null;
-  });
+  // Use workspace.logoUrl to match your sidebar component naming
+  const [avatar, setAvatar] = useState(workspace?.logoUrl || null);
   const [isEditing, setIsEditing] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editedName, setEditedName] = useState(workspace?.name || 'Workspace');
   const [editedPriority, setEditedPriority] = useState(workspace?.priority || 'Normal');
 
-  // Load avatar and random image on mount only, not on every render
+  // Debug workspace object
   useEffect(() => {
-    // Array of pre-loaded images from Cloudinary
+    console.log('Workspace object:', workspace);
+  }, [workspace]);
+
+  // Load random image on mount
+  useEffect(() => {
     const cloudinaryImages = [
       'https://res.cloudinary.com/dwgwb5vro/image/upload/v1746324956/1_mh8knm.png',
       'https://res.cloudinary.com/dwgwb5vro/image/upload/v1746324956/2_gnvc2o.png',
@@ -73,44 +83,82 @@ const Header = ({ workspace, onUpdate }) => {
       'https://res.cloudinary.com/dwgwb5vro/image/upload/v1746324956/4_hz3z9k.png',
       'https://res.cloudinary.com/dwgwb5vro/image/upload/v1746324956/5_nficao.png',
     ];
-
-    // Use a more performant random selection
     const randomIndex = (Math.random() * cloudinaryImages.length) | 0;
     setRandomImage(cloudinaryImages[randomIndex]);
+  }, [workspace.id]);
 
-    // We already initialized avatar with localStorage in useState
-  }, [workspace.id]); // Only re-run if workspace ID changes
-
-  // Memoized handlers to prevent recreation on every render
+  // Memoized handler for image upload
   const handleImageUpload = useCallback(
-    (event) => {
+    async (event) => {
       const file = event.target.files[0];
       if (file) {
-        const imageUrl = URL.createObjectURL(file);
-        setAvatar(imageUrl);
-        localStorage.setItem(`workspace-avatar-${workspace.id}`, imageUrl);
+        // Create temporary preview
+        const temporaryPreview = URL.createObjectURL(file);
+        setAvatar(temporaryPreview);
+
+        // Immediately upload to server
+        try {
+          const response = await updateWorkspace({
+            id: workspace.id,
+            name: workspace.name || 'Workspace',
+            priority: workspace.priority || 'Normal',
+            logo: file,
+          });
+
+          console.log('Image upload response:', response);
+
+          if (response.success) {
+            // Use logoUrl to match your sidebar component naming
+            const serverLogoUrl = response.data.logoUrl || response.data.logo;
+            console.log('Logo URL set to:', serverLogoUrl);
+
+            if (serverLogoUrl) {
+              setAvatar(serverLogoUrl);
+
+              // Force a refresh to ensure the image is displayed
+              const updatedWorkspace = {
+                ...workspace,
+                logoUrl: serverLogoUrl,
+              };
+
+              toast.success('Workspace logo updated successfully!');
+              onUpdate(updatedWorkspace);
+            } else {
+              console.error('No logo URL returned from server');
+              toast.error('Server did not return a valid logo URL');
+            }
+          } else {
+            toast.error('Failed to update workspace logo.');
+            // Revert to original logo if available
+            setAvatar(workspace.logoUrl || null);
+          }
+        } catch (error) {
+          toast.error('An error occurred while uploading the logo: ' + (error.message || 'Unknown error'));
+          // Revert to original logo if available
+          setAvatar(workspace.logoUrl || null);
+          console.error('Logo upload error:', error);
+        } finally {
+          // Clean up the temporary object URL
+          URL.revokeObjectURL(temporaryPreview);
+        }
       }
     },
-    [workspace.id]
+    [workspace.id, workspace.name, workspace.priority, workspace.logoUrl, onUpdate]
   );
 
+  // Memoized handler for saving name and priority
   const handleSave = useCallback(async () => {
     try {
-      // Use an optimistic update for better perceived performance
-      // Update local state immediately before the API call completes
-      const optimisticData = {
-        ...workspace,
-        name: editedName,
-        priority: editedPriority,
-      };
-
-      // Only make the API call if there are actual changes
+      // Only make the API call if there are changes
       if (editedName !== workspace.name || editedPriority !== workspace.priority) {
-        const response = await updateWorkspace({
+        // Prepare payload for API call
+        const payload = {
           id: workspace.id,
           name: editedName,
           priority: editedPriority,
-        });
+        };
+
+        const response = await updateWorkspace(payload);
 
         if (response.success) {
           if (editedName !== workspace.name) {
@@ -122,24 +170,29 @@ const Header = ({ workspace, onUpdate }) => {
               }, 1000);
             }, 1000);
           } else {
-            onUpdate(response.data);
+            const updatedWorkspace = {
+              ...workspace,
+              ...response.data,
+              // Preserve the logo URL to prevent it from being lost on update
+              logoUrl: response.data.logoUrl || workspace.logoUrl,
+            };
+
+            onUpdate(updatedWorkspace);
             toast.success('Workspace updated successfully!');
             window.location.reload();
           }
         } else {
           toast.error('Failed to update workspace.');
         }
-      } else {
-        // No changes, just close edit mode
-        setIsEditing(false);
       }
+      setIsEditing(false);
     } catch (error) {
       toast.error('An error occurred while updating the workspace.');
-    } finally {
       setIsEditing(false);
     }
   }, [workspace, editedName, editedPriority, onUpdate]);
 
+  // Memoized handler for deleting workspace
   const handleDelete = useCallback(async () => {
     try {
       const response = await deleteWorkspace({ id: workspace.id });
@@ -166,22 +219,19 @@ const Header = ({ workspace, onUpdate }) => {
     setIsDialogOpen((prev) => !prev);
   }, []);
 
-  // Render optimization - using fragment to avoid unnecessary DOM nodes
   return (
     <div className="relative w-full">
       <Toaster position="top-center" theme="light" richColors />
 
-      {/* Cover - only render when necessary */}
+      {/* Cover */}
       <div className="w-full h-24 sm:h-32 md:h-40 lg:h-48 overflow-hidden flex items-center">
         {(workspace.cover || randomImage) && <img className="w-full h-full object-cover" src={workspace.cover || randomImage} alt={workspace.name} />}
       </div>
 
       {/* Avatar, Name, Actions */}
       <div className="relative px-4 sm:px-6 flex items-center gap-4 -mt-10 md:-mt-12">
-        {/* Memoized Avatar component */}
         <WorkspaceAvatar name={workspace.name} avatar={avatar} onUpload={handleImageUpload} workspaceId={workspace.id} />
 
-        {/* Name & Buttons */}
         <div className="flex flex-col gap-2 mt-12 md:mt-14">
           {isEditing ? (
             <div className="flex items-center gap-2">
@@ -192,6 +242,12 @@ const Header = ({ workspace, onUpdate }) => {
                 className="text-xl md:text-2xl font-semibold tracking-tight bg-white text-gray-900 border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 autoFocus
               />
+              <select value={editedPriority} onChange={(e) => setEditedPriority(e.target.value)} className="text-md bg-white text-gray-900 border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="Urgent">Urgent</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
               <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-white">
                 Save
               </Button>
