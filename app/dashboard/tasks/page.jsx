@@ -1,30 +1,24 @@
-"use client";
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { RefreshCw, Plus } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { STATUS, PRIORITY } from "@/lib/utils";
-import { TaskStatusBadge } from "@/components/dashboard/Task/TaskStatusBadge";
-import { PriorityBadge } from "@/components/dashboard/Task/PriorityBadge";
-import { TaskForm } from "@/components/dashboard/Task/TaskForm";
-import { toast } from "sonner";
-import { getUserTasks } from "@/lib/api/task";
-import { getWorkspaceById } from "@/lib/api/workspace";
-import { useAuth } from "@/lib/AuthContext";
-import Link from "next/link";
+'use client';
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { RefreshCw, Plus } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { STATUS, PRIORITY } from '@/lib/utils';
+import { TaskStatusBadge } from '@/components/dashboard/Task/TaskStatusBadge';
+import { PriorityBadge } from '@/components/dashboard/Task/PriorityBadge';
+import { TaskForm } from '@/components/dashboard/Task/TaskForm';
+import { toast } from 'sonner';
+import { getUserTasks } from '@/lib/api/task';
+import { getWorkspaceById } from '@/lib/api/workspace';
+import { useAuth } from '@/lib/AuthContext';
+import Link from 'next/link';
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("deadline");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('deadline');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -41,40 +35,37 @@ export default function TasksPage() {
     setIsLoading(true);
     try {
       if (!user || !user.id) {
-        console.error("User ID is undefined. Skipping API call.");
-        setError("User ID is not available. Please log in again.");
+        console.error('User ID is undefined. Skipping API call.');
+        setError('User ID is not available. Please log in again.');
         setLoading(false);
         return;
       }
 
       const userId = user.id;
       const response = await getUserTasks(userId);
-      console.log("Tasks loaded successfully:", response);
+      console.log('Tasks loaded successfully:', response);
 
       if (response.success && response.data.length > 0) {
         const formattedTasks = await Promise.all(
           response.data.map(async (item) => {
-            // Periksa apakah perlu memanggil getWorkspaceById
-            let workspace = { data: { name: item.workspaceName, slug: "#" } };
-            if (!item.workspaceName) {
+            let workspace = { data: { name: item.workspaceName || 'Unknown', slug: '#' } };
+            if (!item.workspaceName || !item.workspaceSlug) {
               workspace = await getWorkspaceById(item.workspaceId);
             }
             return {
-              ...item, // Langsung gunakan item karena tidak ada item.task
-              workspaceName: workspace?.data?.name || "Unknown",
-              workspaceSlug: workspace?.data?.slug || "#",
-              priority: item.priority || "Medium",
+              ...item,
+              workspaceName: workspace?.data?.name || 'Unknown',
+              workspaceSlug: workspace?.data?.slug || '#', // Pastikan slug valid
+              priority: item.priority || 'Medium',
             };
           })
         );
-        console.log("Formatted tasks:", formattedTasks);
+        console.log('Formatted tasks:', formattedTasks);
         setTasks(formattedTasks);
       } else {
-        console.error("No tasks found or API failed:", response.message);
         setTasks([]);
       }
     } catch (error) {
-      console.error("Error loading tasks:", error);
       setTasks([]);
     } finally {
       setIsLoading(false);
@@ -87,21 +78,17 @@ export default function TasksPage() {
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (task) =>
-          task.title.toLowerCase().includes(query) ||
-          task.description.toLowerCase().includes(query)
-      );
+      filtered = filtered.filter((task) => task.title.toLowerCase().includes(query) || task.description.toLowerCase().includes(query));
     }
 
     // Apply sorting
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case "title":
+        case 'title':
           return a.title.localeCompare(b.title);
-        case "deadline":
+        case 'deadline':
           return new Date(a.deadline || 0) - new Date(b.deadline || 0);
-        case "priority": {
+        case 'priority': {
           const priorityOrder = {
             [PRIORITY.URGENT]: 1,
             [PRIORITY.HIGH]: 2,
@@ -110,7 +97,7 @@ export default function TasksPage() {
           };
           return (priorityOrder[a.priority] || 5) - (priorityOrder[b.priority] || 5);
         }
-        case "status": {
+        case 'status': {
           const statusOrder = {
             [STATUS.TODO]: 1,
             [STATUS.ONGOING]: 2,
@@ -133,9 +120,9 @@ export default function TasksPage() {
   const handleTaskSaved = (savedTask, isEditing) => {
     loadTasks();
     if (isEditing) {
-      toast.success("Task updated successfully");
+      toast.success('Task updated successfully');
     } else {
-      toast.success("Task added successfully");
+      toast.success('Task added successfully');
     }
   };
 
@@ -143,20 +130,15 @@ export default function TasksPage() {
     setTaskToEdit(task);
   };
 
-  const displayTasks =
-    filteredTasks.length > 0
-      ? filteredTasks
-      : isLoading
-        ? []
-        : tasks.filter((task) => task && task.id);
+  const displayTasks = filteredTasks.length > 0 ? filteredTasks : isLoading ? [] : tasks.filter((task) => task && task.id);
 
   const formatDate = (dateString) => {
-    if (!dateString) return "No deadline";
+    if (!dateString) return 'No deadline';
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
     });
   };
 
@@ -166,12 +148,7 @@ export default function TasksPage() {
 
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex flex-col sm:flex-row gap-4 mb-6 items-center">
-          <Input
-            placeholder="Search by title..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="max-w-xs bg-gray-50"
-          />
+          <Input placeholder="Search by title..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="max-w-xs bg-gray-50" />
 
           <div className="flex items-center gap-4">
             <Select value={sortBy} onValueChange={setSortBy}>
@@ -219,11 +196,7 @@ export default function TasksPage() {
             <tbody>
               {displayTasks.map((task, index) =>
                 task && task.id ? (
-                  <tr
-                    key={task.id}
-                    className={`border-b border-gray-200 hover:bg-gray-100 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-blue-50"
-                      }`}
-                  >
+                  <tr key={task.id} className={`border-b border-gray-200 hover:bg-gray-100 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-blue-50'}`}>
                     <td className="p-3 max-w-xs align-middle" title={task.title}>
                       <TaskForm
                         isEditing={true}
@@ -237,36 +210,20 @@ export default function TasksPage() {
                             title={task.title} // Menampilkan judul lengkap saat hover
                             aria-label={`Edit task: ${task.title}`}
                           >
-                            {task.title.length > 10
-                              ? `${task.title.slice(0, 10)}...`
-                              : task.title}
+                            {task.title.length > 10 ? `${task.title.slice(0, 10)}...` : task.title}
                           </Button>
                         }
                       />
                     </td>
-                    <td
-                      className="p-3 max-w-xs align-middle truncate"
-                      title={task.description}
-                    >
-                      {task.description.length > 30
-                        ? `${task.description.slice(0, 30)}...`
-                        : task.description}
+                    <td className="p-3 max-w-xs align-middle truncate" title={task.description}>
+                      {task.description.length > 30 ? `${task.description.slice(0, 30)}...` : task.description}
                     </td>
                     <td className="p-3 align-middle">
                       <TaskStatusBadge status={task.status} />
                     </td>
-                    <td className="p-3 align-middle whitespace-nowrap">
-                      {formatDate(task.deadline)}
-                    </td>
-                    <td
-                      className="p-3 align-middle max-w-[150px] truncate"
-                      title={task.workspaceName}
-                    >
-                      <Link
-                        href={`/dashboard/workspace/${task.workspaceSlug}`}
-                        className="text-blue-600 hover:underline truncate block"
-                        title={task.workspaceName}
-                      >
+                    <td className="p-3 align-middle whitespace-nowrap">{formatDate(task.deadline)}</td>
+                    <td className="p-3 align-middle max-w-[150px] truncate" title={task.workspaceName}>
+                      <Link href={`/dashboard/workspace/${task.workspaceSlug}`} className="text-blue-600 hover:underline truncate block" title={task.workspaceName}>
                         {task.workspaceName}
                       </Link>
                     </td>

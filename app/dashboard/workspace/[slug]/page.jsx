@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { getWorkspaceDetail } from "@/lib/api/workspace";
-import Header from "@/components/dashboard/workspace/Header";
-import KanbanPage from "./kanban";
-import { getTaskByWorkspace } from "@/lib/api/task";
-import { toast } from "sonner";
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { getWorkspaceDetail } from '@/lib/api/workspace';
+import Header from '@/components/dashboard/workspace/Header';
+import KanbanPage from './kanban';
+import { getTaskByWorkspace } from '@/lib/api/task';
+import { toast } from 'sonner';
 
 export default function WorkspacePage() {
   const { slug } = useParams();
   const [workspace, setWorkspace] = useState(null);
   const [tasks, setTasks] = useState({
-    "To Do": [],
+    'To Do': [],
     Ongoing: [],
     Done: [],
   });
@@ -28,43 +28,40 @@ export default function WorkspacePage() {
         // Ambil data workspace
         const workspaceResponse = await getWorkspaceDetail(slug);
         if (!workspaceResponse.success || !workspaceResponse.data) {
-          throw new Error(workspaceResponse.message || "Failed to fetch workspace");
+          throw new Error(workspaceResponse.message || 'Failed to fetch workspace');
         }
-        console.log("Workspace API Response:", workspaceResponse.data);
+        console.log('Workspace API Response:', workspaceResponse.data);
 
         // Validasi workspace ID
         const workspaceData = workspaceResponse.data;
         if (!workspaceData.id) {
-          throw new Error("Workspace ID is missing");
+          throw new Error('Workspace ID is missing');
         }
 
         // Ambil data task
         const tasksResponse = await getTaskByWorkspace(workspaceData.id);
         if (!tasksResponse.success || !Array.isArray(tasksResponse.data)) {
-          throw new Error(tasksResponse.message || "Failed to fetch tasks");
+          throw new Error(tasksResponse.message || 'Failed to fetch tasks');
         }
-        console.log("Tasks API Response:", tasksResponse.data);
-        console.log("Task statuses:", tasksResponse.data.map((task) => task.status));
+        console.log('Tasks API Response:', tasksResponse.data);
+        console.log(
+          'Task statuses:',
+          tasksResponse.data.map((task) => task.status)
+        );
 
         // Format task ke dalam kolom
         const formattedTasks = {
-          "To Do": tasksResponse.data
-            .filter((task) => task.status === "To Do")
-            .sort((a, b) => (a.deadline && b.deadline ? new Date(a.deadline) - new Date(b.deadline) : 0)),
-          Ongoing: tasksResponse.data
-            .filter((task) => task.status === "Ongoing" || task.status === "In Progress") // Tangani status In Progress
-            .sort((a, b) => (a.deadline && b.deadline ? new Date(a.deadline) - new Date(b.deadline) : 0)),
-          Done: tasksResponse.data
-            .filter((task) => task.status === "Done")
-            .sort((a, b) => (a.deadline && b.deadline ? new Date(a.deadline) - new Date(b.deadline) : 0)),
+          'To Do': tasksResponse.data.filter((task) => task.status === 'To Do').sort((a, b) => (a.deadline && b.deadline ? new Date(a.deadline) - new Date(b.deadline) : 0)),
+          Ongoing: tasksResponse.data.filter((task) => task.status === 'Ongoing' || task.status === 'In Progress').sort((a, b) => (a.deadline && b.deadline ? new Date(a.deadline) - new Date(b.deadline) : 0)),
+          Done: tasksResponse.data.filter((task) => task.status === 'Done').sort((a, b) => (a.deadline && b.deadline ? new Date(a.deadline) - new Date(b.deadline) : 0)),
         };
-        console.log("Formatted tasks:", formattedTasks);
+        console.log('Formatted tasks:', formattedTasks);
 
         setWorkspace(workspaceData);
         setTasks(formattedTasks);
       } catch (err) {
-        console.error("Error fetching workspace or tasks:", err);
-        setError(err.message || "An error occurred while loading the workspace.");
+        console.error('Error fetching workspace or tasks:', err);
+        setError(err.message || 'An error occurred while loading the workspace.');
       } finally {
         setLoading(false);
       }

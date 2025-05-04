@@ -1,21 +1,14 @@
-// components/auth/IllustrationSection.jsx
-import Image from "next/image";
+import Image from 'next/image';
 
-export default function IllustrationSection({
-  title,
-  description,
-  imageSrc,
-  alt,
-}) {
+export default function IllustrationSection({ title, description, imageSrc, alt }) {
   return (
     <div
       className="hidden md:flex flex-col justify-center items-center relative w-1/2 min-h-screen"
       style={{
-        backgroundImage:
-          "url('https://res.cloudinary.com/dy8fe8tbe/image/upload/v1745079384/background_kajdxm.png?q_auto,f_webp')",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
+        backgroundImage: "url('https://res.cloudinary.com/dy8fe8tbe/image/upload/v1745079384/background_kajdxm.png?q_auto,f_webp')",
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
       }}
       aria-hidden="true"
     >
@@ -24,16 +17,7 @@ export default function IllustrationSection({
           {title} <span className="text-[#6387CE]">Scheduro</span> It!
         </h1>
         <p className="text-[#333333] text-base mb-6">{description}</p>
-        <Image
-          src={imageSrc}
-          alt={alt}
-          width={500}
-          height={500}
-          className="object-contain"
-          placeholder="blur"
-          blurDataURL="/placeholder.png"
-          loading="lazy"
-        />
+        <Image src={imageSrc} alt={alt} width={500} height={500} className="object-contain" loading="lazy" />
       </div>
     </div>
   );
