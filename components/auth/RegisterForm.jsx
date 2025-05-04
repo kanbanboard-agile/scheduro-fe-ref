@@ -238,7 +238,7 @@ export default function RegisterForm() {
           />
           <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
             I agree with the{' '}
-            <Link href="/terms" className="text-[#6387CE] hover:underline">
+            <Link href="/policy" className="text-[#6387CE] hover:underline">
               Terms of Service
             </Link>{' '}
             and{' '}

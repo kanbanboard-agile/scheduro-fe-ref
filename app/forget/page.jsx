@@ -11,8 +11,37 @@ export default function ForgetPasswordPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [turnstileVerified, setTurnstileVerified] = useState(false);
+  const [turnstileError, setTurnstileError] = useState(null);
   const { requestPasswordReset } = useAuth();
   const router = useRouter();
+
+  // Load Turnstile script and render widget
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      if (window.turnstile) {
+        window.turnstile.render('#turnstile-widget', {
+          sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY, // Add site key in .env
+          callback: () => {
+            setTurnstileVerified(true); // Verification successful, show page
+          },
+          'error-callback': () => {
+            setTurnstileError('Turnstile verification failed. Please try again.');
+          },
+        });
+      }
+    };
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   // Pre-fill email from query parameter
   useEffect(() => {
@@ -30,7 +59,6 @@ export default function ForgetPasswordPage() {
 
     try {
       await requestPasswordReset(email);
-      // Save email in localStorage for verification page
       localStorage.setItem('resetEmail', email);
       setMessage('A verification code has been sent to your email.');
       setTimeout(() => {
@@ -42,6 +70,26 @@ export default function ForgetPasswordPage() {
     }
   };
 
+  // Show only Turnstile widget if not verified
+  if (!turnstileVerified) {
+    return (
+      <div className="min-h-screen flex items-center justify-center flex-col gap-4">
+        <div id="turnstile-widget"></div>
+        <p>Verifying...</p>
+      </div>
+    );
+  }
+
+  // Show error if Turnstile verification fails
+  if (turnstileError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>{turnstileError}</p>
+      </div>
+    );
+  }
+
+  // Show Forget Password page if verified
   return (
     <div className="flex min-h-screen w-full">
       <IllustrationSection
