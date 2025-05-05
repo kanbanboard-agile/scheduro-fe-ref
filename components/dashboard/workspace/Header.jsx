@@ -9,7 +9,7 @@ import { updateWorkspace, deleteWorkspace } from '@/lib/api/workspace';
 
 // Memoized Avatar component to prevent unnecessary re-renders
 const WorkspaceAvatar = memo(({ name, avatar, onUpload, workspaceId }) => {
-  console.log('Avatar URL in WorkspaceAvatar:', avatar);
+  // console.log('Avatar URL in WorkspaceAvatar:', avatar);
   const [imgError, setImgError] = useState(false);
 
   return (
@@ -71,7 +71,7 @@ const Header = ({ workspace, onUpdate }) => {
 
   // Debug workspace object
   useEffect(() => {
-    console.log('Workspace object:', workspace);
+    // console.log('Workspace object:', workspace);
   }, [workspace]);
 
   // Load random image on mount
@@ -105,12 +105,12 @@ const Header = ({ workspace, onUpdate }) => {
             logo: file,
           });
 
-          console.log('Image upload response:', response);
+          // console.log('Image upload response:', response);
 
           if (response.success) {
             // Use logoUrl to match your sidebar component naming
             const serverLogoUrl = response.data.logoUrl || response.data.logo;
-            console.log('Logo URL set to:', serverLogoUrl);
+            // console.log('Logo URL set to:', serverLogoUrl);
 
             if (serverLogoUrl) {
               setAvatar(serverLogoUrl);

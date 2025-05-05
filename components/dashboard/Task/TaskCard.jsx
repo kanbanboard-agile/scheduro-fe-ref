@@ -69,7 +69,7 @@ const TaskCard = React.memo(({ task, status, onTaskUpdate }) => {
   useEffect(() => {
     const preventDragAndOpenDialog = (e) => {
       if (isDraggingStarted) {
-        console.log("Blocked dialog open due to dragging");
+        // console.log("Blocked dialog open due to dragging");
         return;
       }
       e.preventDefault();
@@ -108,7 +108,7 @@ const TaskCard = React.memo(({ task, status, onTaskUpdate }) => {
 
   const handleOpenDialog = () => {
     if (!isDraggingStarted) {
-      console.log("Opening dialog for task:", task);
+      // console.log("Opening dialog for task:", task);
       setEditedTask({
         ...task,
         deadline: task.deadline ? new Date(task.deadline).toISOString().split("T")[0] : "",
@@ -147,15 +147,15 @@ const TaskCard = React.memo(({ task, status, onTaskUpdate }) => {
         deadline: editedTask.deadline ? new Date(editedTask.deadline).toISOString() : null,
         status: editedTask.status || status,
       };
-      console.log("Sending updated task to API:", formattedTask);
+      // console.log("Sending updated task to API:", formattedTask);
       const response = await updateTask(formattedTask);
-      console.log("Update task response:", response);
+      // console.log("Update task response:", response);
       if (!response.success) throw new Error(response.message || "Failed to update task");
       const updatedTask = response.data?.task || response.data;
       if (!updatedTask || !updatedTask.id) {
         throw new Error("Invalid task data in API response");
       }
-      console.log("Task updated:", updatedTask);
+      // console.log("Task updated:", updatedTask);
       onTaskUpdate({ ...updatedTask, id: updatedTask.id.toString() });
       toast.success("Task updated successfully");
       handleCloseDialog();
@@ -168,11 +168,11 @@ const TaskCard = React.memo(({ task, status, onTaskUpdate }) => {
   const handleDeleteTask = async () => {
     try {
       if (!task?.id) throw new Error("Task ID is missing");
-      console.log("Deleting task with ID:", task.id);
+      // console.log("Deleting task with ID:", task.id);
       const response = await deleteTask({ id: task.id.toString() });
-      console.log("Delete task response:", response);
+      // console.log("Delete task response:", response);
       if (!response.success) throw new Error(response.message || "Failed to delete task");
-      console.log("Task deleted, ID:", task.id);
+      // console.log("Task deleted, ID:", task.id);
       onTaskUpdate(null, task.id.toString());
       toast.success("Task deleted successfully");
       setIsDeleteDialogOpen(false);

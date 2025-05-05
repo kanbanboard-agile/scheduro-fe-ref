@@ -28,7 +28,7 @@ export function ToDoListCard() {
 
     try {
       const response = await getUserTasks(user.id);
-      console.log('API Response:', response); // Debugging: Lihat respons API
+      // console.log('API Response:', response); // Debugging: Lihat respons API
 
       if (response.success && response.data.length > 0) {
         // Ambil detail workspace untuk setiap tugas
@@ -65,11 +65,11 @@ export function ToDoListCard() {
           .filter((task) => {
             // Filter hanya tugas dengan status TODO, case-insensitive
             const isTodo = task && task.id && task.status?.toLowerCase() === STATUS.TODO.toLowerCase();
-            console.log(`Task ${task?.id}: status=${task?.status}, isTodo=${isTodo}`); // Debugging
+            // console.log(`Task ${task?.id}: status=${task?.status}, isTodo=${isTodo}`); // Debugging
             return isTodo;
           });
 
-        console.log('Filtered TODO Tasks:', formattedTasks); // Debugging
+        // console.log('Filtered TODO Tasks:', formattedTasks); // Debugging
         setTasks(formattedTasks);
       } else {
         setTasks([]);
@@ -125,10 +125,10 @@ export function ToDoListCard() {
                       <span className="text-xs text-gray-500">
                         {task.deadline
                           ? new Date(task.deadline).toLocaleDateString('id-ID', {
-                              day: 'numeric',
-                              month: 'long',
-                              year: 'numeric',
-                            })
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                          })
                           : 'No Deadline'}
                       </span>
                     </div>
