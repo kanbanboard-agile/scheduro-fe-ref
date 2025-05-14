@@ -4,13 +4,13 @@ export function PriorityBadge({ priority }) {
   const getPriorityStyles = () => {
     switch (priority) {
       case PRIORITY.URGENT:
-        return "bg-red-500 text-white";
+        return "bg-[#A21800] text-white";
       case PRIORITY.HIGH:
-        return "bg-purple-500 text-white";
+        return "bg-[#CA4848] text-white";
       case PRIORITY.MEDIUM:
-        return "bg-blue-500 text-white";
+        return "bg-[#E8A87C] text-white";
       case PRIORITY.LOW:
-        return "bg-green-500 text-white";
+        return "bg-[#8FB350] text-white";
       default:
         return "bg-gray-200 text-gray-800"; // Gaya default untuk prioritas tidak valid
     }
