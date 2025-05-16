@@ -89,13 +89,13 @@ export function WorkspaceForm({ onWorkspaceAdded }) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button className="flex h-5 w-5 items-center justify-center rounded-md hover:bg-gray-100">
+        <button className="cursor-pointer flex h-5 w-5 items-center justify-center rounded-md hover:bg-gray-100">
           <Plus className="h-4 w-4" />
         </button>
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 !max-w-full rounded-l-2xl p-6 bg-gray-50 border-l shadow-xl"
+        className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 !max-w-full rounded-l-2xl p-6 bg-gray-50 border-l shadow-xl overflow-y-auto max-h-screen"
       >
         <SheetHeader className="mb-4 md:-ml-4">
           <SheetTitle className="text-base font-semibold">
@@ -125,12 +125,21 @@ export function WorkspaceForm({ onWorkspaceAdded }) {
               type="text"
               placeholder="Enter title"
               value={data.name}
-              onChange={(e) => setData({ ...data, name: e.target.value })}
+              maxLength={60}
+              onChange={(e) => {
+                if (e.target.value.length >= 60) {
+                  setData({ ...data, name: e.target.value });
+                }
+              }}
               autoFocus
               className={`mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${errors.name ? "focus:ring-red-500" : "focus:ring-blue-300"
                 }`}
               disabled={isSubmitting}
             />
+            <div
+              className={`absolute bottom-1 right-3 text-xs ${data.name.length >= 60 ? "text-red-500 font-semibold" : "text-gray-500"
+                }`}
+            ></div>
             {errors.name && (
               <p className="text-sm text-red-600 mt-1">{errors.name}</p>
             )}

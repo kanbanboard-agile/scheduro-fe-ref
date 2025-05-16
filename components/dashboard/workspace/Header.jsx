@@ -46,10 +46,10 @@ const DeleteDialog = memo(({ isOpen, onClose, onDelete }) => {
         <DialogDescription>Are you sure you want to delete this workspace? This action cannot be undone.</DialogDescription>
       </DialogHeader>
       <DialogFooter>
-        <Button variant="outline" className="bg-gray-200 hover:bg-gray-300" onClick={onClose}>
+        <Button variant="outline" className="cursor-pointer bg-gray-200 hover:bg-gray-300" onClick={onClose}>
           Cancel
         </Button>
-        <Button variant="destructive" className="bg-red-600 hover:bg-red-700 text-white" onClick={onDelete}>
+        <Button variant="destructive" className="cursor-pointer bg-red-600 hover:bg-red-700 text-white" onClick={onDelete}>
           Delete
         </Button>
       </DialogFooter>
@@ -238,20 +238,30 @@ const Header = ({ workspace, onUpdate }) => {
               <input
                 type="text"
                 value={editedName}
-                onChange={(e) => setEditedName(e.target.value)}
-                className="text-xl md:text-2xl font-semibold tracking-tight bg-white text-gray-900 border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => {
+                  if (e.target.value.length >= 60) {
+                    setEditedName(e.target.value);
+                  }
+                }}
+                className="text-xl md:text-2xl font-semibold tracking-tight bg-white text-gray-900 border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full pr-16"
                 autoFocus
               />
+              <span
+                className={`absolute bottom-1.5 right-3 text-xs ${editedName.length >= 60 ? 'text-red-500 font-semibold' : 'text-gray-500'
+                  }`}
+              >
+                {editedName.length}/60
+              </span>
               <select value={editedPriority} onChange={(e) => setEditedPriority(e.target.value)} className="text-md bg-white text-gray-900 border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="Urgent">Urgent</option>
                 <option value="High">High</option>
                 <option value="Medium">Medium</option>
                 <option value="Low">Low</option>
               </select>
-              <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-white">
+              <Button onClick={handleSave} className="cursor-pointer bg-green-600 hover:bg-green-700 text-white">
                 Save
               </Button>
-              <Button onClick={toggleEditing} className="bg-gray-500 text-white">
+              <Button onClick={toggleEditing} className="cursor-pointer bg-gray-500 text-white">
                 Cancel
               </Button>
             </div>

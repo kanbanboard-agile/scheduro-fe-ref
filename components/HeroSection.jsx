@@ -17,7 +17,7 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="bg-gray-50 min-h-[90vh] flex flex-col md:flex-row justify-between items-center px-16 sm:px-10 md:px-20 py-16 overflow-hidden md:ml-6">
+    <section className="bg-gray-50 min-h-[90vh] flex flex-col md:flex-row justify-between items-center pl-24 pr-16 sm:px-10 md:pl-26 md:pr-20 py-16 overflow-hidden">
       <motion.img
         src="https://res.cloudinary.com/dwgwb5vro/image/upload/v1741287250/char_1_1_ugxw4a.png"
         alt="Character with productivity icons"
@@ -69,7 +69,7 @@ const HeroSection = () => {
             }}
             whileTap={{ scale: 0.98 }}
           >
-            <ArrowRight className="w-4 h-4 mr-2" />
+            <ArrowRight className="w-7 h-9 mr-2" />
             <span className="text-sm font-medium whitespace-nowrap">Try it on Web!</span>
           </motion.a>
         ) : (

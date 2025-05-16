@@ -279,7 +279,7 @@ const TaskCard = React.memo(({ task, status, onTaskUpdate }) => {
 
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Task</DialogTitle>
           </DialogHeader>
@@ -291,19 +291,45 @@ const TaskCard = React.memo(({ task, status, onTaskUpdate }) => {
                   id="title"
                   name="title"
                   value={editedTask.title || ""}
-                  onChange={handleInputChange}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    if (newValue.length >= 60) {
+                      handleInputChange(e);
+                    }
+                  }}
                 />
+                <span
+                  className={`absolute bottom-1 right-2 text-xs ${(editedTask.title?.length || 0) >= 60 ? "text-red-500" : "text-gray-500"
+                    }`}
+                >
+                  {(editedTask.title?.length || 0)}/60
+                </span>
               </div>
+
               <div className="grid gap-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
                   name="description"
                   value={editedTask.description || ""}
-                  onChange={handleInputChange}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    if (newValue.length >= 254) {
+                      handleInputChange(e);
+                    }
+                  }}
                   className="min-h-[100px]"
                 />
+                <span
+                  className={`absolute bottom-1 right-2 text-xs ${(editedTask.description?.length || 0) >= 254
+                      ? "text-red-500"
+                      : "text-gray-500"
+                    }`}
+                >
+                  {(editedTask.description?.length || 0)}/254
+                </span>
               </div>
+
               <div className="grid gap-2">
                 <Label htmlFor="priority">Priority</Label>
                 <Select
@@ -320,6 +346,7 @@ const TaskCard = React.memo(({ task, status, onTaskUpdate }) => {
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="grid gap-2">
                 <Label htmlFor="status">Status</Label>
                 <Select
@@ -336,6 +363,7 @@ const TaskCard = React.memo(({ task, status, onTaskUpdate }) => {
                   </SelectContent>
                 </Select>
               </div>
+              
               <div className="grid gap-2">
                 <Label htmlFor="deadline">Deadline</Label>
                 <Input
@@ -349,10 +377,12 @@ const TaskCard = React.memo(({ task, status, onTaskUpdate }) => {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={handleCloseDialog}>
+            <Button variant="outline" onClick={handleCloseDialog} className="cursor-pointer">
               Cancel
             </Button>
-            <Button onClick={handleSaveTask}>Save</Button>
+            <Button onClick={handleSaveTask} className="cursor-pointer">
+              Save
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -366,10 +396,10 @@ const TaskCard = React.memo(({ task, status, onTaskUpdate }) => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} className="cursor-pointer">
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDeleteTask}>
+            <Button variant="destructive" onClick={handleDeleteTask} className="cursor-pointer">
               Delete
             </Button>
           </DialogFooter>

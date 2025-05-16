@@ -34,7 +34,7 @@ const Footer = () => {
       <AnimatePresence>
         {showButton && (
           <motion.div className="fixed bottom-6 right-6 z-50" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} transition={{ duration: 0.2 }}>
-            <button onClick={scrollToTop} className="bg-gradient-to-br from-[#6387CE] to-[#4058A4] text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1" aria-label="Back to top">
+            <button onClick={scrollToTop} className="bg-gradient-to-br from-[#6387CE] to-[#4058A4] cursor-pointer text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1" aria-label="Back to top">
               <ChevronUp className="w-5 h-5" />
             </button>
           </motion.div>

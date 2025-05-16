@@ -23,6 +23,8 @@ export function TaskForm({ slug, onTaskSaved, initialStatus, trigger, isEditing 
   });
   const [availableWorkspaces, setAvailableWorkspaces] = useState([]);
   const [errors, setErrors] = useState({});
+  const titleMaxLength = 60;
+  const descMaxLength = 254;
 
   useEffect(() => {
     const fetchWorkspaces = async () => {
@@ -74,6 +76,10 @@ export function TaskForm({ slug, onTaskSaved, initialStatus, trigger, isEditing 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === 'title' && value.length > titleMaxLength) return;
+    if (name === 'description' && value.length > descMaxLength) return;
+
     setTask((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
@@ -195,6 +201,11 @@ export function TaskForm({ slug, onTaskSaved, initialStatus, trigger, isEditing 
               className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${errors.title ? 'border-red-300 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
             />
             {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title}</p>}
+            <div className="flex justify-end mt-1">
+              <span className={`text-xs ${task.title.length >= titleMaxLength ? 'text-red-500' : 'text-gray-500'}`}>
+                {task.title.length}/{titleMaxLength}
+              </span>
+            </div>
           </div>
 
           <div>
@@ -210,6 +221,11 @@ export function TaskForm({ slug, onTaskSaved, initialStatus, trigger, isEditing 
               rows={3}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
+            <div className="flex justify-end mt-1">
+              <span className={`text-xs ${task.description.length >= descMaxLength ? 'text-red-500' : 'text-gray-500'}`}>
+                {task.description.length}/{descMaxLength}
+              </span>
+            </div>
           </div>
 
           {fixedWorkspace ? (
