@@ -17,7 +17,7 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="bg-gray-50 min-h-[90vh] flex flex-col md:flex-row justify-between items-center pl-24 pr-16 sm:px-10 md:pl-26 md:pr-20 py-16 overflow-hidden">
+      <section className="bg-gray-50 min-h-[90vh] flex flex-col md:flex-row justify-between items-center px-4 md:px-24 py-16 overflow-hidden">
       <motion.img
         src="https://res.cloudinary.com/dwgwb5vro/image/upload/v1741287250/char_1_1_ugxw4a.png"
         alt="Character with productivity icons"
@@ -33,7 +33,7 @@ const HeroSection = () => {
           },
         }}
       />
-      <motion.div className="w-full md:w-1/2 text-center md:text-left" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: 'easeOut' }}>
+      <motion.div className="w-full md:w-1/2 text-center md:text-left flex flex-col items-center md:items-start" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: 'easeOut' }}>
         <motion.div className="relative inline-block py-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.8 }}>
           <motion.h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-tight tracking-tight">
             <span className="relative z-10">Seamless </span>
