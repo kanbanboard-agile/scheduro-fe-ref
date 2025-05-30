@@ -13,7 +13,7 @@ const Navbar = ({ className }) => {
 
   const handleScroll = () => {
     const about = document.getElementById("about");
-    const features = document.getElementById("features");
+    const feature = document.getElementById("feature");
     const faq = document.getElementById("faq");
     const download = document.getElementById("download");
 
@@ -21,8 +21,8 @@ const Navbar = ({ className }) => {
       setActiveSection("download");
     } else if (window.scrollY >= (faq?.offsetTop || 0) - 100) {
       setActiveSection("faq");
-    } else if (window.scrollY >= (features?.offsetTop || 0) - 100) {
-      setActiveSection("features");
+    } else if (window.scrollY >= (feature?.offsetTop || 0) - 100) {
+      setActiveSection("feature");
     } else if (window.scrollY >= (about?.offsetTop || 0) - 100) {
       setActiveSection("about");
     } else {
@@ -102,18 +102,29 @@ const Navbar = ({ className }) => {
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center justify-between flex-1 ml-52">
           <ul className="flex items-center">
-            {["home", "about", "features", "faq", "download"].map((item) => (
+            {["home", "about", "feature", "faq", "download"].map((item) => (
               <li key={item} className="mx-4">
                 {item === "home" ? (
-                  <Link href="/" className={linkClass(item)}>
+                  <button
+                    onClick={() => {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                      setActiveSection("home");
+                      setIsMenuOpen(false);
+                    }}
+                    className={linkClass(item)}
+                  >
                     Home
-                  </Link>
+                  </button>
                 ) : (
                   <button
                     onClick={() => handleNavClick(item)}
                     className={linkClass(item)}
                   >
-                    {item === "faq" ? "FAQ" : item.charAt(0).toUpperCase() + item.slice(1)}
+                    {item === "faq"
+                      ? "FAQ"
+                      : item === "feature"
+                        ? "Features"
+                        : item.charAt(0).toUpperCase() + item.slice(1)}
                   </button>
                 )}
               </li>
@@ -143,19 +154,26 @@ const Navbar = ({ className }) => {
             {["home", "about", "feature", "faq", "download"].map((item) => (
               <li key={item}>
                 {item === "home" ? (
-                  <Link
-                    href="/"
+                  <button
+                    onClick={() => {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                      setActiveSection("home");
+                      setIsMenuOpen(false);
+                    }}
                     className={linkClass(item)}
-                    onClick={() => setIsMenuOpen(false)}
                   >
                     Home
-                  </Link>
+                  </button>
                 ) : (
                   <button
                     onClick={() => handleNavClick(item)}
                     className={linkClass(item)}
                   >
-                    {item === "faq" ? "FAQ" : item.charAt(0).toUpperCase() + item.slice(1)}
+                    {item === "faq"
+                      ? "FAQ"
+                      : item === "feature"
+                        ? "Features"
+                        : item.charAt(0).toUpperCase() + item.slice(1)}
                   </button>
                 )}
               </li>
