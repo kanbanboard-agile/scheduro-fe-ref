@@ -12,7 +12,8 @@ export function GenerateTaskButton() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="fixed top-4 right-4 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white">
+        <Button className="fixed top-4 right-14 h-12 px-5 bg-gradient-to-r from-purple-500 to-blue-500 
+             hover:from-purple-600 hover:to-blue-600 text-white z-50">
           <Sparkles className="w-4 h-4 mr-2" />
           Generate Task AI
         </Button>
