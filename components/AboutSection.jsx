@@ -67,7 +67,7 @@ const AboutSection = () => {
             </motion.div>
           </div>
 
-          <div className="w-full md:w-1/2 flex flex-col gap-8">
+          <div className="w-full md:w-1/2 flex flex-col gap-6">
             {features.map((feature, index) => (
               <div key={index} className="flex items-start gap-4 py-4 transition hover:scale-105">
                 <img src={feature.icon} alt={feature.title} className="w-12 h-12" loading="lazy" />

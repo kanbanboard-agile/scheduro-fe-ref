@@ -35,7 +35,7 @@ const HeroSection = () => {
       />
       <motion.div className="w-full md:w-1/2 text-center md:text-left flex flex-col items-center md:items-start" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: 'easeOut' }}>
         <motion.div className="relative inline-block py-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.8 }}>
-          <motion.h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-tight tracking-tight">
+          <motion.h1 className="text-2xl sm:text-4xl lg:text-6xl font-bold leading-tight tracking-tight -mb-6">
             <span className="relative z-10">Seamless </span>
 
             <motion.span className="text-[#6387CE] relative z-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.6 }}>
@@ -52,7 +52,7 @@ const HeroSection = () => {
           <motion.div className="absolute top-1/4 -right-10 w-32 h-32 bg-[#6387CE]/10 rounded-full blur-xl z-0" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1, duration: 1 }} />
         </motion.div>
 
-        <motion.p className="md:text-lg text-gray-700 mt-8 md:mt-8 mx-auto md:mx-0 md:max-w-lg text-center md:text-justify text-l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 0.8 }}>
+        <motion.p className="md:text-l md:-ml-5 text-gray-700 mt-6 md:mt-8 mx-auto md:mx-0 md:max-w-lg text-center md:text-justify p-6">
           Scheduro helps you manage your tasks and time effectively, giving you the control to focus on what truly matters.
         </motion.p>
 

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 const Navbar = ({ className }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("");
+  const [activeSection, setActiveSection] = useState("home");
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -31,8 +31,8 @@ const Navbar = ({ className }) => {
   };
 
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
     handleScroll();
+    window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -46,17 +46,16 @@ const Navbar = ({ className }) => {
   };
 
   const linkClass = (section) =>
-    `font-poppins transition-colors cursor-pointer text-sm ${
-      activeSection === section
-        ? "text-[#6387CE] font-bold"
-        : "text-black hover:text-[#6387CE]"
+    `font-poppins transition-colors cursor-pointer text-[15px] ${activeSection === section
+      ? "text-[#6387CE] font-bold"
+      : "text-black hover:text-[#6387CE]"
     }`;
 
   return (
     <nav
       className={`bg-gray-50 py-4 px-6 sm:px-8 md:px-16 sticky top-0 z-50 w-full shadow-md ${className}`}
     >
-      <div className="flex items-center justify-between w-full max-w-[1200px] mx-auto">
+      <div className="flex items-center justify-between space-x-4 ml-4 md:ml-8 mr-4 md:mr-8">
         {/* Logo */}
         <div className="flex items-center">
           <Image
@@ -72,8 +71,8 @@ const Navbar = ({ className }) => {
         </div>
 
         {/* Mobile Toggle Button */}
-        <div className="flex items-center gap-3 md:hidden">
-          <button className="flex items-center p-2" onClick={toggleMenu}>
+        <div className="flex items-center gap-4 md:hidden">
+          <button className="flex items-center pl-40" onClick={toggleMenu}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -101,7 +100,7 @@ const Navbar = ({ className }) => {
         </div>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center justify-between flex-1 ml-10">
+        <div className="hidden md:flex items-center justify-between flex-1 ml-52">
           <ul className="flex items-center">
             {["home", "about", "feature", "faq", "download"].map((item) => (
               <li key={item} className="mx-4">
@@ -114,7 +113,7 @@ const Navbar = ({ className }) => {
                     onClick={() => handleNavClick(item)}
                     className={linkClass(item)}
                   >
-                    {item.charAt(0).toUpperCase() + item.slice(1)}
+                    {item === "faq" ? "FAQ" : item.charAt(0).toUpperCase() + item.slice(1)}
                   </button>
                 )}
               </li>
@@ -156,7 +155,7 @@ const Navbar = ({ className }) => {
                     onClick={() => handleNavClick(item)}
                     className={linkClass(item)}
                   >
-                    {item.charAt(0).toUpperCase() + item.slice(1)}
+                    {item === "faq" ? "FAQ" : item.charAt(0).toUpperCase() + item.slice(1)}
                   </button>
                 )}
               </li>
