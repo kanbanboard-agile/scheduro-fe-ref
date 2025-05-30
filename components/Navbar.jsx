@@ -13,7 +13,7 @@ const Navbar = ({ className }) => {
 
   const handleScroll = () => {
     const about = document.getElementById("about");
-    const feature = document.getElementById("feature");
+    const features = document.getElementById("features");
     const faq = document.getElementById("faq");
     const download = document.getElementById("download");
 
@@ -21,8 +21,8 @@ const Navbar = ({ className }) => {
       setActiveSection("download");
     } else if (window.scrollY >= (faq?.offsetTop || 0) - 100) {
       setActiveSection("faq");
-    } else if (window.scrollY >= (feature?.offsetTop || 0) - 100) {
-      setActiveSection("feature");
+    } else if (window.scrollY >= (features?.offsetTop || 0) - 100) {
+      setActiveSection("features");
     } else if (window.scrollY >= (about?.offsetTop || 0) - 100) {
       setActiveSection("about");
     } else {
@@ -102,7 +102,7 @@ const Navbar = ({ className }) => {
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center justify-between flex-1 ml-52">
           <ul className="flex items-center">
-            {["home", "about", "feature", "faq", "download"].map((item) => (
+            {["home", "about", "features", "faq", "download"].map((item) => (
               <li key={item} className="mx-4">
                 {item === "home" ? (
                   <Link href="/" className={linkClass(item)}>
