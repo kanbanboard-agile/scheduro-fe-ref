@@ -124,12 +124,12 @@ const Navbar = ({ className }) => {
         {/* Desktop Buttons */}
         <div className="hidden md:flex items-center space-x-4">
           <Link href="/login">
-            <Button className="bg-[#6387CE] text-white px-8 py-3 rounded-full shadow-md hover:bg-[#4F6EC1]">
+            <Button className="bg-[#6387CE] text-white px-8 py-3 rounded-full shadow-md hover:bg-[#4F6EC1] cursor-pointer">
               <span className="text-base font-medium">Login</span>
             </Button>
           </Link>
           <Link href="/register">
-            <Button className="border-2 border-[#6387CE] text-[#6387CE] bg-transparent px-8 py-3 rounded-full shadow-md hover:bg-[#4F6EC1] hover:text-white">
+            <Button className="border-2 border-[#6387CE] text-[#6387CE] bg-transparent px-8 py-3 rounded-full shadow-md hover:bg-[#4F6EC1] hover:text-white cursor-pointer">
               <span className="text-base font-medium">Register</span>
             </Button>
           </Link>
