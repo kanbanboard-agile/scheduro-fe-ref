@@ -10,14 +10,18 @@ export default function FormInput({
   value,
   onChange,
   placeholder,
+  error,
+  required = false,
   showToggle = false,
   isVisible,
   toggleVisibility,
+  ...props
 }) {
   return (
     <div className="space-y-1">
       <label htmlFor={id} className="block font-semibold text-gray-700">
         {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
       </label>
       <div className="relative">
         <input
@@ -27,8 +31,14 @@ export default function FormInput({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className="w-full border rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6387CE]"
+          className={`w-full border rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 ${
+            error 
+              ? 'border-red-500 focus:ring-red-500' 
+              : 'border-gray-300 focus:ring-[#6387CE]'
+          }`}
           aria-label={label}
+          required={required}
+          {...props}
         />
         {showToggle && (
           <button
@@ -45,6 +55,11 @@ export default function FormInput({
           </button>
         )}
       </div>
+      {error && (
+        <p className="text-sm text-red-600 mt-1" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

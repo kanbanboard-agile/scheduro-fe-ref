@@ -23,7 +23,6 @@ export default function RegisterForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [serverError, setServerError] = useState(null);
 
   // Memoized form validation function
   const validateForm = useCallback(() => {
@@ -42,9 +41,12 @@ export default function RegisterForm() {
       newErrors.email = 'Please enter a valid email';
     }
 
-    const phoneRegex = /^\+?\d{7,15}$/;
-    if (formData.number && !phoneRegex.test(formData.number)) {
-      newErrors.number = 'Please enter a valid phone number (7-15 digits)';
+    // Indonesian phone number validation (only 08... format)
+    const phoneRegex = /^08\d{8,12}$/;
+    if (!formData.number) {
+      newErrors.number = 'Phone number is required';
+    } else if (!phoneRegex.test(formData.number)) {
+      newErrors.number = 'Please enter a valid Indonesian phone number starting with 08 (e.g., 081234567890)';
     }
 
     if (!formData.password) {
@@ -71,7 +73,25 @@ export default function RegisterForm() {
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: '' }));
+    
+    // Real-time validation for phone number
+    if (name === 'number') {
+      if (!value) {
+        setErrors((prev) => ({ ...prev, [name]: 'Phone number is required' }));
+      } else {
+        const phoneRegex = /^08\d{8,12}$/;
+        if (!phoneRegex.test(value)) {
+          setErrors((prev) => ({ 
+            ...prev, 
+            [name]: 'Please enter a valid Indonesian phone number starting with 08 (e.g., 081234567890)' 
+          }));
+        } else {
+          setErrors((prev) => ({ ...prev, [name]: '' }));
+        }
+      }
+    } else {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   }, []);
 
   // Memoized checkbox change handler
@@ -92,7 +112,6 @@ export default function RegisterForm() {
   // Optimized form submission handler
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setServerError(null);
 
     if (!validateForm()) {
       return;
@@ -128,7 +147,6 @@ export default function RegisterForm() {
       const errorMessage = err.response?.data?.message || err.message || 'Registration failed. Please try again.';
 
       toast.error(errorMessage);
-      setServerError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -187,8 +205,9 @@ export default function RegisterForm() {
           name="number"
           value={formData.number}
           onChange={handleChange}
-          placeholder="e.g., +6281234567890 (Optional)"
+          placeholder="e.g., 081234567890"
           error={errors.number}
+          required
           aria-invalid={errors.number ? 'true' : 'false'}
           aria-describedby={errors.number ? 'number-error' : undefined}
         />
@@ -252,11 +271,6 @@ export default function RegisterForm() {
           <p id="terms-error" className="text-sm text-red-600" role="alert">
             {errors.terms}
           </p>
-        )}
-        {serverError && (
-          <div className="text-red-600 text-sm" role="alert">
-            {serverError}
-          </div>
         )}
 
         <button type="submit" disabled={!agreeToTerms || loading} className={buttonClass} aria-label="Register">

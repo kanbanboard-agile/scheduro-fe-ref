@@ -30,7 +30,7 @@ export function TaskForm({ slug, onTaskSaved, initialStatus, trigger, isEditing 
     const fetchWorkspaces = async () => {
       try {
         if (!user || !user.id) {
-          setErrors({ general: 'User ID is not available. Please log in again.' });
+          toast.error('User ID is not available. Please log in again.');
           setLoading(false);
           return;
         }
@@ -42,10 +42,10 @@ export function TaskForm({ slug, onTaskSaved, initialStatus, trigger, isEditing 
           const workspaceData = response.data.map((item) => item.workspace);
           setAvailableWorkspaces(workspaceData);
         } else {
-          setErrors({ general: 'Failed to fetch workspaces from API' });
+          toast.error('Failed to fetch workspaces from API');
         }
       } catch (error) {
-        setErrors({ general: 'Error fetching workspaces: ' + error.message });
+        toast.error('Error fetching workspaces: ' + error.message);
       } finally {
         setLoading(false);
       }
@@ -153,12 +153,10 @@ export function TaskForm({ slug, onTaskSaved, initialStatus, trigger, isEditing 
         }
         setOpen(false);
       } else {
-        toast.error('Failed to save task', {
-          description: response.message || 'An error occurred.',
-        });
+        toast.error(response.message || 'Failed to save task');
       }
     } catch (error) {
-      toast.error('An error occurred while saving the task.');
+      toast.error(error.response?.data?.message || error.message || 'An error occurred while saving the task.');
     }
   };
 
@@ -182,8 +180,6 @@ export function TaskForm({ slug, onTaskSaved, initialStatus, trigger, isEditing 
           <h3 className="text-lg font-semibold">{isEditing ? 'Edit Task' : 'Add New Task'}</h3>
           <DialogTitle className="text-sm text-gray-500">{isEditing ? 'Update task details' : 'Add new task to your workspace'}</DialogTitle>
         </SheetHeader>
-
-        {errors.general && <p className="text-sm text-red-500 mb-4">{errors.general}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

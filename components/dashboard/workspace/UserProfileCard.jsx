@@ -3,15 +3,14 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export function UserProfileCard({ isLoading, user }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [errorMsg, setErrorMsg] = useState(null);
   const router = useRouter();
 
   const handleEditClick = () => {
-    setErrorMsg('Features is coming soon!');
-    setTimeout(() => setErrorMsg(null), 3000);
+    toast.info('Features is coming soon!');
   };
 
   const handleResetPassword = () => {
@@ -61,27 +60,23 @@ export function UserProfileCard({ isLoading, user }) {
                   className="w-14 h-14 mx-auto rounded-full"
                   alt="User avatar"
                   onError={(e) => {
-                    console.error('Failed to load avatar:', user?.avatar);
+                    // console.error('Failed to load avatar:', user?.avatar);
                     e.target.src = 'https://res.cloudinary.com/dy8fe8tbe/image/upload/v1742238102/user_profile_grka1i.svg';
                   }}
                 />
                 <p className="text-lg font-medium mt-2">{user?.name || 'N/A'}</p>
                 <p className="text-sm text-gray-500">{user?.email || 'N/A'}</p>
-                {errorMsg ? (
-                  <p className="text-red-600 mt-4 text-sm">{errorMsg}</p>
-                ) : (
-                  <div className="mt-4 flex flex-col space-y-3">
-                    <button onClick={handleEditClick} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                      Edit Profile
-                    </button>
-                    <button
-                      onClick={handleResetPassword}
-                      className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-md"
-                    >
-                      Reset Password
-                    </button>
-                  </div>
-                )}
+                <div className="mt-4 flex flex-col space-y-3">
+                  <button onClick={handleEditClick} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                    Edit Profile
+                  </button>
+                  <button
+                    onClick={handleResetPassword}
+                    className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-md"
+                  >
+                    Reset Password
+                  </button>
+                </div>
               </div>
             </>
           )}
@@ -110,7 +105,7 @@ export function UserProfileCard({ isLoading, user }) {
               aria-label="Open profile"
               tabIndex={0}
               onError={(e) => {
-                console.error('Failed to load avatar:', user?.avatar);
+                // console.error('Failed to load avatar:', user?.avatar);
                 e.target.src = 'https://res.cloudinary.com/dy8fe8tbe/image/upload/v1742238102/user_profile_grka1i.svg';
               }}
             />

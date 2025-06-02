@@ -149,7 +149,6 @@ export default function KanbanPage({ workspace, tasks: initialTasks }) {
         if (!response.success) throw new Error('Failed to update task');
         toast.success(`Task moved to ${targetColumn}`);
       } catch (error) {
-        console.error('Error updating task:', error);
         setTasks(tasks); // Revert to original tasks on error
         toast.error('Error updating task status');
       }

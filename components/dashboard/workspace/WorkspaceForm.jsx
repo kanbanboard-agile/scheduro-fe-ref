@@ -57,25 +57,27 @@ export function WorkspaceForm({ onWorkspaceAdded }) {
     setIsSubmitting(true);
     try {
       const response = await createWorkspace(payload);
-      const newWorkspace = response.workspace || {
-        id: Date.now(),
-        name: data.name,
-        slug: data.name.toLowerCase().replace(/\s+/g, "-"),
-        priority: validPriority,
-      };
+      
+      if (response.success) {
+        const newWorkspace = response.workspace || response.data || {
+          id: Date.now(),
+          name: data.name,
+          slug: data.name.toLowerCase().replace(/\s+/g, "-"),
+          priority: validPriority,
+        };
 
-      if (onWorkspaceAdded) {
-        onWorkspaceAdded(newWorkspace); // Perbarui state di sisi klien
+        if (onWorkspaceAdded) {
+          onWorkspaceAdded(newWorkspace); // Perbarui state di sisi klien
+        }
+
+        toast.success(response.message || "Workspace created successfully");
+        setOpen(false);
+      } else {
+        toast.error(response.message || "Failed to create workspace");
       }
-
-      toast.success(response.message || "Workspace created successfully");
-      setOpen(false);
     } catch (error) {
-      console.error("Error creating workspace:", error);
-      toast.error(error.message || "Failed to create workspace");
-      if (error.response?.data?.message) {
-        setErrors({ server: error.response.data.message });
-      }
+      // console.error("Error creating workspace:", error);
+      toast.error(error.response?.data?.message || error.message || "Failed to create workspace");
     } finally {
       setIsSubmitting(false);
     }
@@ -119,7 +121,7 @@ export function WorkspaceForm({ onWorkspaceAdded }) {
             <label htmlFor="name" className="text-sm font-medium">
               Title
             </label>
-            <input
+          <input
               id="name"
               name="name"
               type="text"
@@ -127,9 +129,7 @@ export function WorkspaceForm({ onWorkspaceAdded }) {
               value={data.name}
               maxLength={60}
               onChange={(e) => {
-                if (e.target.value.length >= 60) {
-                  setData({ ...data, name: e.target.value });
-                }
+                setData({ ...data, name: e.target.value }); // Selalu update state
               }}
               autoFocus
               className={`mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${errors.name ? "focus:ring-red-500" : "focus:ring-blue-300"
@@ -181,10 +181,6 @@ export function WorkspaceForm({ onWorkspaceAdded }) {
               </SelectContent>
             </Select>
           </div>
-
-          {errors.server && (
-            <p className="text-sm text-red-600 mt-1">{errors.server}</p>
-          )}
 
           <div className="flex justify-end gap-3 mt-6">
             <Button

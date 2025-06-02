@@ -40,7 +40,7 @@ const TaskCard = React.memo(({ task, status, onTaskUpdate }) => {
 
   // Validasi task
   if (!task || !task.id) {
-    console.warn("Invalid task in TaskCard:", task);
+    // console.warn("Invalid task in TaskCard:", task);
     return null;
   }
 
@@ -69,7 +69,7 @@ const TaskCard = React.memo(({ task, status, onTaskUpdate }) => {
   useEffect(() => {
     const preventDragAndOpenDialog = (e) => {
       if (isDraggingStarted) {
-        console.log("Blocked dialog open due to dragging");
+        // console.log("Blocked dialog open due to dragging");
         return;
       }
       e.preventDefault();
@@ -108,7 +108,7 @@ const TaskCard = React.memo(({ task, status, onTaskUpdate }) => {
 
   const handleOpenDialog = () => {
     if (!isDraggingStarted) {
-      console.log("Opening dialog for task:", task);
+      // console.log("Opening dialog for task:", task);
       setEditedTask({
         ...task,
         deadline: task.deadline ? new Date(task.deadline).toISOString().split("T")[0] : "",
@@ -147,38 +147,38 @@ const TaskCard = React.memo(({ task, status, onTaskUpdate }) => {
         deadline: editedTask.deadline ? new Date(editedTask.deadline).toISOString() : null,
         status: editedTask.status || status,
       };
-      console.log("Sending updated task to API:", formattedTask);
+      // console.log("Sending updated task to API:", formattedTask);
       const response = await updateTask(formattedTask);
-      console.log("Update task response:", response);
+      // console.log("Update task response:", response);
       if (!response.success) throw new Error(response.message || "Failed to update task");
       const updatedTask = response.data?.task || response.data;
       if (!updatedTask || !updatedTask.id) {
         throw new Error("Invalid task data in API response");
       }
-      console.log("Task updated:", updatedTask);
+      // console.log("Task updated:", updatedTask);
       onTaskUpdate({ ...updatedTask, id: updatedTask.id.toString() });
       toast.success("Task updated successfully");
       handleCloseDialog();
     } catch (error) {
-      console.error("Error saving task:", error);
-      toast.error(error.message || "Failed to save task");
+      // console.error("Error saving task:", error);
+      toast.error(error.response?.data?.message || error.message || "Failed to save task");
     }
   };
 
   const handleDeleteTask = async () => {
     try {
       if (!task?.id) throw new Error("Task ID is missing");
-      console.log("Deleting task with ID:", task.id);
+      // console.log("Deleting task with ID:", task.id);
       const response = await deleteTask({ id: task.id.toString() });
-      console.log("Delete task response:", response);
+      // console.log("Delete task response:", response);
       if (!response.success) throw new Error(response.message || "Failed to delete task");
-      console.log("Task deleted, ID:", task.id);
+      // console.log("Task deleted, ID:", task.id);
       onTaskUpdate(null, task.id.toString());
       toast.success("Task deleted successfully");
       setIsDeleteDialogOpen(false);
     } catch (error) {
-      console.error("Error deleting task:", error, { status: error.status, contentType: error.contentType });
-      toast.error(error.message || "Failed to delete task");
+      // console.error("Error deleting task:", error, { status: error.status, contentType: error.contentType });
+      toast.error(error.response?.data?.message || error.message || "Failed to delete task");
     }
   };
 
@@ -291,15 +291,11 @@ const TaskCard = React.memo(({ task, status, onTaskUpdate }) => {
                   id="title"
                   name="title"
                   value={editedTask.title || ""}
-                  onChange={(e) => {
-                    const newValue = e.target.value;
-                    if (newValue.length >= 60) {
-                      handleInputChange(e);
-                    }
-                  }}
+                  onChange={handleInputChange}
+                  maxLength={60}
                 />
                 <span
-                  className={`absolute bottom-1 right-2 text-xs ${(editedTask.title?.length || 0) >= 60 ? "text-red-500" : "text-gray-500"
+                  className={`text-xs ${(editedTask.title?.length || 0) >= 60 ? "text-red-500" : "text-gray-500"
                     }`}
                 >
                   {(editedTask.title?.length || 0)}/60
@@ -312,16 +308,12 @@ const TaskCard = React.memo(({ task, status, onTaskUpdate }) => {
                   id="description"
                   name="description"
                   value={editedTask.description || ""}
-                  onChange={(e) => {
-                    const newValue = e.target.value;
-                    if (newValue.length >= 254) {
-                      handleInputChange(e);
-                    }
-                  }}
+                  onChange={handleInputChange}
+                  maxLength={254}
                   className="min-h-[100px]"
                 />
                 <span
-                  className={`absolute bottom-1 right-2 text-xs ${(editedTask.description?.length || 0) >= 254
+                  className={`text-xs ${(editedTask.description?.length || 0) >= 254
                       ? "text-red-500"
                       : "text-gray-500"
                     }`}

@@ -15,12 +15,9 @@ function KanbanColumn({ title, tasks = [], onTaskUpdate, className, workspace })
 
   // Validasi title
   const validTitle = ['To Do', 'Ongoing', 'Done'].includes(title) ? title : 'To Do';
-  console.log(`KanbanColumn (${validTitle}) rendered`);
-  console.log(`KanbanColumn (${validTitle}) tasks:`, tasks);
 
   // Validasi tasks
   const validTasks = Array.isArray(tasks) ? tasks.filter((task) => task && task.id && ['string', 'number'].includes(typeof task.id)) : [];
-  console.log(`KanbanColumn (${validTitle}) validTasks:`, validTasks);
 
   const columnStyles = {
     'To Do': isOver ? 'bg-blue-100 border-blue-400 ring-2 ring-blue-400' : 'bg-gray-50 border-transparent hover:border-blue-200',

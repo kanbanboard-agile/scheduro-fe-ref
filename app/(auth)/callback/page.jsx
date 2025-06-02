@@ -40,7 +40,8 @@ export default function OAuthCallback() {
                 toast.success("Login successful! Redirecting...");
                 router.push("/dashboard");
             } catch (err) {
-                toast.error(err.message || "Authentication failed");
+                const errorMessage = err.response?.data?.message || err.message || "Authentication failed";
+                toast.error(errorMessage);
                 router.push("/login");
             } finally {
                 setLoading(false);

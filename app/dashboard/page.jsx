@@ -11,7 +11,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { useRouter } from 'next/navigation';
 import { getUserWorkspaces } from '@/lib/api/workspace';
 import { getUserTasks } from '@/lib/api/task';
-import { GenerateTaskButton } from '@/components/dashboard/task/GenerateTaskButton';
+
 
 // Memoized child components to prevent unnecessary re-renders
 const MemoizedStatsCard = React.memo(StatsCard);
@@ -280,8 +280,6 @@ export default function DashboardPage() {
         error: null,
       });
     } catch (err) {
-      console.error('Error loading data:', err);
-
       // Reset all states on error in a single update
       setData((prev) => ({
         ...prev,
@@ -315,10 +313,6 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6">
-      {/* Generate Task Button */}
-      <div className="flex justify-end mb-4">
-        <GenerateTaskButton />
-      </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="col-span-1 md:col-span-3 py-4">
           {/* Stats Cards */}
