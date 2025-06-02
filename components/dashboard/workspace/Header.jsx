@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState, useCallback, memo } from 'react';
-import { Building2, Pencil, Trash } from 'lucide-react';
+import { Building2, Pencil, Trash, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast, Toaster } from 'sonner';
 import { updateWorkspace, deleteWorkspace } from '@/lib/api/workspace';
+import GenerateTaskButton from '@/components/dashboard/Task/GenerateTaskButton';
 
 // Memoized Avatar component to prevent unnecessary re-renders
 const WorkspaceAvatar = memo(({ name, avatar, onUpload, workspaceId }) => {
@@ -20,7 +21,7 @@ const WorkspaceAvatar = memo(({ name, avatar, onUpload, workspaceId }) => {
           alt={`${name} Avatar`}
           className="h-20 w-20 md:h-24 md:w-24 rounded-full ring-4 ring-white object-cover shadow-md"
           onError={(e) => {
-            console.error('Image failed to load:', avatar);
+            // console.error('Image failed to load:', avatar);
             setImgError(true);
           }}
         />
@@ -46,10 +47,10 @@ const DeleteDialog = memo(({ isOpen, onClose, onDelete }) => {
         <DialogDescription>Are you sure you want to delete this workspace? This action cannot be undone.</DialogDescription>
       </DialogHeader>
       <DialogFooter>
-        <Button variant="outline" className="bg-gray-200 hover:bg-gray-300" onClick={onClose}>
+        <Button variant="outline" className="cursor-pointer bg-gray-200 hover:bg-gray-300" onClick={onClose}>
           Cancel
         </Button>
-        <Button variant="destructive" className="bg-red-600 hover:bg-red-700 text-white" onClick={onDelete}>
+        <Button variant="destructive" className="cursor-pointer bg-red-600 hover:bg-red-700 text-white" onClick={onDelete}>
           Delete
         </Button>
       </DialogFooter>
@@ -124,7 +125,7 @@ const Header = ({ workspace, onUpdate }) => {
               toast.success('Workspace logo updated successfully!');
               onUpdate(updatedWorkspace);
             } else {
-              console.error('No logo URL returned from server');
+              // console.error('No logo URL returned from server');
               toast.error('Server did not return a valid logo URL');
             }
           } else {
@@ -136,7 +137,7 @@ const Header = ({ workspace, onUpdate }) => {
           toast.error('An error occurred while uploading the logo: ' + (error.message || 'Unknown error'));
           // Revert to original logo if available
           setAvatar(workspace.logoUrl || null);
-          console.error('Logo upload error:', error);
+          // console.error('Logo upload error:', error);
         } finally {
           // Clean up the temporary object URL
           URL.revokeObjectURL(temporaryPreview);
@@ -182,12 +183,14 @@ const Header = ({ workspace, onUpdate }) => {
             window.location.reload();
           }
         } else {
-          toast.error('Failed to update workspace.');
+          toast.error(response.message || 'Failed to update workspace.');
         }
+      } else {
+        toast.info('No changes to save.');
       }
       setIsEditing(false);
     } catch (error) {
-      toast.error('An error occurred while updating the workspace.');
+      toast.error(error.response?.data?.message || error.message || 'An error occurred while updating the workspace.');
       setIsEditing(false);
     }
   }, [workspace, editedName, editedPriority, onUpdate]);
@@ -202,10 +205,10 @@ const Header = ({ workspace, onUpdate }) => {
           window.location.href = '/dashboard';
         }, 1000);
       } else {
-        toast.error('Failed to delete workspace.');
+        toast.error(response.message || 'Failed to delete workspace.');
       }
     } catch (error) {
-      toast.error('An error occurred while deleting the workspace.');
+      toast.error(error.response?.data?.message || error.message || 'An error occurred while deleting the workspace.');
     } finally {
       setIsDialogOpen(false);
     }
@@ -229,48 +232,65 @@ const Header = ({ workspace, onUpdate }) => {
       </div>
 
       {/* Avatar, Name, Actions */}
-      <div className="relative px-4 sm:px-6 flex items-center gap-4 -mt-10 md:-mt-12">
-        <WorkspaceAvatar name={workspace.name} avatar={avatar} onUpload={handleImageUpload} workspaceId={workspace.id} />
+      <div className="relative px-4 sm:px-6 flex items-center justify-between gap-4 -mt-10 md:-mt-12">
+        <div className="flex items-center gap-4">
+          <WorkspaceAvatar name={workspace.name} avatar={avatar} onUpload={handleImageUpload} workspaceId={workspace.id} />
 
-        <div className="flex flex-col gap-2 mt-12 md:mt-14">
-          {isEditing ? (
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={editedName}
-                onChange={(e) => setEditedName(e.target.value)}
-                className="text-xl md:text-2xl font-semibold tracking-tight bg-white text-gray-900 border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                autoFocus
-              />
-              <select value={editedPriority} onChange={(e) => setEditedPriority(e.target.value)} className="text-md bg-white text-gray-900 border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="Urgent">Urgent</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-              </select>
-              <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-white">
-                Save
-              </Button>
-              <Button onClick={toggleEditing} className="bg-gray-500 text-white">
-                Cancel
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold">{editedName}</h2>
-              <Button variant="ghost" size="icon" onClick={toggleEditing} className="text-yellow-500 hover:bg-gray-200">
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Dialog open={isDialogOpen} onOpenChange={toggleDialog}>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-red-500 hover:bg-gray-200">
-                    <Trash className="h-4 w-4" />
-                  </Button>
-                </DialogTrigger>
-                <DeleteDialog isOpen={isDialogOpen} onClose={toggleDialog} onDelete={handleDelete} />
-              </Dialog>
-            </div>
-          )}
+          <div className="flex flex-col gap-2 mt-12 md:mt-14">
+            {isEditing ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={editedName}
+                  onChange={(e) => {
+                    if (e.target.value.length >= 60) {
+                      setEditedName(e.target.value);
+                    }
+                  }}
+                  className="text-xl md:text-2xl font-semibold tracking-tight bg-white text-gray-900 border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full pr-16"
+                  autoFocus
+                />
+                <span
+                  className={`absolute bottom-1.5 right-3 text-xs ${editedName.length >= 60 ? 'text-red-500 font-semibold' : 'text-gray-500'
+                    }`}
+                >
+                  {editedName.length}/60
+                </span>
+                <select value={editedPriority} onChange={(e) => setEditedPriority(e.target.value)} className="text-md bg-white text-gray-900 border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="Urgent">Urgent</option>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+                <Button onClick={handleSave} className="cursor-pointer bg-green-600 hover:bg-green-700 text-white">
+                  Save
+                </Button>
+                <Button onClick={toggleEditing} className="cursor-pointer bg-gray-500 text-white">
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold">{editedName}</h2>
+                <Button variant="ghost" size="icon" onClick={toggleEditing} className="text-yellow-500 hover:bg-gray-200">
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Dialog open={isDialogOpen} onOpenChange={toggleDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="text-red-500 hover:bg-gray-200">
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DeleteDialog isOpen={isDialogOpen} onClose={toggleDialog} onDelete={handleDelete} />
+                </Dialog>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* AI Generate Task Button */}
+        <div className="mt-12 md:mt-14">
+          <GenerateTaskButton workspaceId={workspace.id} />
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 import IllustrationSection from '@/components/auth/IllustrationSection';
 import { useAuth } from '@/lib/AuthContext';
 import Link from 'next/link';
@@ -8,8 +9,6 @@ import Link from 'next/link';
 export default function ForgetPasswordPage() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [turnstileVerified, setTurnstileVerified] = useState(false);
   const [turnstileError, setTurnstileError] = useState(null);
@@ -53,19 +52,18 @@ export default function ForgetPasswordPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('');
-    setError('');
     setIsLoading(true);
 
     try {
       await requestPasswordReset(email);
       localStorage.setItem('resetEmail', email);
-      setMessage('A verification code has been sent to your email.');
+      toast.success('A verification code has been sent to your email.');
       setTimeout(() => {
         router.push('/forget/verifyotp');
       }, 2000);
     } catch (err) {
-      setError(err.message || 'Failed to send reset link. Please try again.');
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to send reset link. Please try again.';
+      toast.error(errorMessage);
       setIsLoading(false);
     }
   };
@@ -101,8 +99,6 @@ export default function ForgetPasswordPage() {
       <div className="flex flex-col justify-center items-center w-full max-w-md mx-auto p-4">
         <div className="w-full">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Reset Password</h2>
-          {message && <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">{message}</div>}
-          {error && <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">{error}</div>}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">

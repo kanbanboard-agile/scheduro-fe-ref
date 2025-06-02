@@ -23,12 +23,14 @@ export function TaskForm({ slug, onTaskSaved, initialStatus, trigger, isEditing 
   });
   const [availableWorkspaces, setAvailableWorkspaces] = useState([]);
   const [errors, setErrors] = useState({});
+  const titleMaxLength = 60;
+  const descMaxLength = 254;
 
   useEffect(() => {
     const fetchWorkspaces = async () => {
       try {
         if (!user || !user.id) {
-          setErrors({ general: 'User ID is not available. Please log in again.' });
+          toast.error('User ID is not available. Please log in again.');
           setLoading(false);
           return;
         }
@@ -40,10 +42,10 @@ export function TaskForm({ slug, onTaskSaved, initialStatus, trigger, isEditing 
           const workspaceData = response.data.map((item) => item.workspace);
           setAvailableWorkspaces(workspaceData);
         } else {
-          setErrors({ general: 'Failed to fetch workspaces from API' });
+          toast.error('Failed to fetch workspaces from API');
         }
       } catch (error) {
-        setErrors({ general: 'Error fetching workspaces: ' + error.message });
+        toast.error('Error fetching workspaces: ' + error.message);
       } finally {
         setLoading(false);
       }
@@ -74,6 +76,10 @@ export function TaskForm({ slug, onTaskSaved, initialStatus, trigger, isEditing 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === 'title' && value.length > titleMaxLength) return;
+    if (name === 'description' && value.length > descMaxLength) return;
+
     setTask((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
@@ -147,12 +153,10 @@ export function TaskForm({ slug, onTaskSaved, initialStatus, trigger, isEditing 
         }
         setOpen(false);
       } else {
-        toast.error('Failed to save task', {
-          description: response.message || 'An error occurred.',
-        });
+        toast.error(response.message || 'Failed to save task');
       }
     } catch (error) {
-      toast.error('An error occurred while saving the task.');
+      toast.error(error.response?.data?.message || error.message || 'An error occurred while saving the task.');
     }
   };
 
@@ -177,8 +181,6 @@ export function TaskForm({ slug, onTaskSaved, initialStatus, trigger, isEditing 
           <DialogTitle className="text-sm text-gray-500">{isEditing ? 'Update task details' : 'Add new task to your workspace'}</DialogTitle>
         </SheetHeader>
 
-        {errors.general && <p className="text-sm text-red-500 mb-4">{errors.general}</p>}
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="title" className="text-sm font-medium block mb-1">
@@ -195,6 +197,11 @@ export function TaskForm({ slug, onTaskSaved, initialStatus, trigger, isEditing 
               className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${errors.title ? 'border-red-300 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-300'}`}
             />
             {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title}</p>}
+            <div className="flex justify-end mt-1">
+              <span className={`text-xs ${task.title.length >= titleMaxLength ? 'text-red-500' : 'text-gray-500'}`}>
+                {task.title.length}/{titleMaxLength}
+              </span>
+            </div>
           </div>
 
           <div>
@@ -210,6 +217,11 @@ export function TaskForm({ slug, onTaskSaved, initialStatus, trigger, isEditing 
               rows={3}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
+            <div className="flex justify-end mt-1">
+              <span className={`text-xs ${task.description.length >= descMaxLength ? 'text-red-500' : 'text-gray-500'}`}>
+                {task.description.length}/{descMaxLength}
+              </span>
+            </div>
           </div>
 
           {fixedWorkspace ? (

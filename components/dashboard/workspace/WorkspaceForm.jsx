@@ -57,25 +57,27 @@ export function WorkspaceForm({ onWorkspaceAdded }) {
     setIsSubmitting(true);
     try {
       const response = await createWorkspace(payload);
-      const newWorkspace = response.workspace || {
-        id: Date.now(),
-        name: data.name,
-        slug: data.name.toLowerCase().replace(/\s+/g, "-"),
-        priority: validPriority,
-      };
+      
+      if (response.success) {
+        const newWorkspace = response.workspace || response.data || {
+          id: Date.now(),
+          name: data.name,
+          slug: data.name.toLowerCase().replace(/\s+/g, "-"),
+          priority: validPriority,
+        };
 
-      if (onWorkspaceAdded) {
-        onWorkspaceAdded(newWorkspace); // Perbarui state di sisi klien
+        if (onWorkspaceAdded) {
+          onWorkspaceAdded(newWorkspace); // Perbarui state di sisi klien
+        }
+
+        toast.success(response.message || "Workspace created successfully");
+        setOpen(false);
+      } else {
+        toast.error(response.message || "Failed to create workspace");
       }
-
-      toast.success(response.message || "Workspace created successfully");
-      setOpen(false);
     } catch (error) {
-      console.error("Error creating workspace:", error);
-      toast.error(error.message || "Failed to create workspace");
-      if (error.response?.data?.message) {
-        setErrors({ server: error.response.data.message });
-      }
+      // console.error("Error creating workspace:", error);
+      toast.error(error.response?.data?.message || error.message || "Failed to create workspace");
     } finally {
       setIsSubmitting(false);
     }
@@ -89,13 +91,13 @@ export function WorkspaceForm({ onWorkspaceAdded }) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button className="flex h-5 w-5 items-center justify-center rounded-md hover:bg-gray-100">
+        <button className="cursor-pointer flex h-5 w-5 items-center justify-center rounded-md hover:bg-gray-100">
           <Plus className="h-4 w-4" />
         </button>
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 !max-w-full rounded-l-2xl p-6 bg-gray-50 border-l shadow-xl"
+        className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 !max-w-full rounded-l-2xl p-6 bg-gray-50 border-l shadow-xl overflow-y-auto max-h-screen"
       >
         <SheetHeader className="mb-4 md:-ml-4">
           <SheetTitle className="text-base font-semibold">
@@ -119,18 +121,25 @@ export function WorkspaceForm({ onWorkspaceAdded }) {
             <label htmlFor="name" className="text-sm font-medium">
               Title
             </label>
-            <input
+          <input
               id="name"
               name="name"
               type="text"
               placeholder="Enter title"
               value={data.name}
-              onChange={(e) => setData({ ...data, name: e.target.value })}
+              maxLength={60}
+              onChange={(e) => {
+                setData({ ...data, name: e.target.value }); // Selalu update state
+              }}
               autoFocus
               className={`mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${errors.name ? "focus:ring-red-500" : "focus:ring-blue-300"
                 }`}
               disabled={isSubmitting}
             />
+            <div
+              className={`absolute bottom-1 right-3 text-xs ${data.name.length >= 60 ? "text-red-500 font-semibold" : "text-gray-500"
+                }`}
+            ></div>
             {errors.name && (
               <p className="text-sm text-red-600 mt-1">{errors.name}</p>
             )}
@@ -172,10 +181,6 @@ export function WorkspaceForm({ onWorkspaceAdded }) {
               </SelectContent>
             </Select>
           </div>
-
-          {errors.server && (
-            <p className="text-sm text-red-600 mt-1">{errors.server}</p>
-          )}
 
           <div className="flex justify-end gap-3 mt-6">
             <Button

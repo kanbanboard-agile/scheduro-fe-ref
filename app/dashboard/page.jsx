@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { getUserWorkspaces } from '@/lib/api/workspace';
 import { getUserTasks } from '@/lib/api/task';
 
+
 // Memoized child components to prevent unnecessary re-renders
 const MemoizedStatsCard = React.memo(StatsCard);
 const MemoizedUserProfileCard = React.memo(UserProfileCard);
@@ -279,8 +280,6 @@ export default function DashboardPage() {
         error: null,
       });
     } catch (err) {
-      console.error('Error loading data:', err);
-
       // Reset all states on error in a single update
       setData((prev) => ({
         ...prev,
@@ -320,16 +319,16 @@ export default function DashboardPage() {
           <div className="grid gap-2 grid-cols-[repeat(auto-fit,_minmax(180px,_1fr))]">
             {combinedLoading
               ? STATS_SKELETONS.map((index) => (
-                  <Card key={index} className="min-w-[180px] h-[88px] border-[#6387CE]">
-                    <CardContent className="px-4 py-2 flex items-center gap-3 w-full">
-                      <Skeleton className="w-10 h-10 rounded-md" />
-                      <div className="flex flex-col justify-center text-left leading-tight">
-                        <Skeleton className="h-4 w-20 mb-1" />
-                        <Skeleton className="h-5 w-8" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
+                <Card key={index} className="min-w-[180px] h-[88px] border-[#6387CE]">
+                  <CardContent className="px-4 py-2 flex items-center gap-3 w-full">
+                    <Skeleton className="w-10 h-10 rounded-md" />
+                    <div className="flex flex-col justify-center text-left leading-tight">
+                      <Skeleton className="h-4 w-20 mb-1" />
+                      <Skeleton className="h-5 w-8" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
               : statsData.map((stat, index) => <MemoizedStatsCard key={index} title={stat.title} value={stat.value} icon={stat.icon} />)}
           </div>
 

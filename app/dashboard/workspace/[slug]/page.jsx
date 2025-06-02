@@ -34,7 +34,6 @@ export default function WorkspacePage() {
   const [workspace, setWorkspace] = useState(null);
   const [taskData, setTaskData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   // Format tasks into columns - memoized to prevent unnecessary recalculations
   const tasks = useMemo(() => {
@@ -55,7 +54,6 @@ export default function WorkspacePage() {
 
     try {
       setLoading(true);
-      setError(null);
 
       // Use Promise.all to fetch data in parallel
       const [workspaceResponse, tasksResponse] = await Promise.all([
@@ -84,8 +82,7 @@ export default function WorkspacePage() {
       setWorkspace(workspaceData);
       setTaskData(tasksResponse.data);
     } catch (err) {
-      console.error('Error fetching workspace or tasks:', err);
-      setError(err.message || 'An error occurred while loading the workspace.');
+      toast.error(err.message || 'An error occurred while loading the workspace.');
     } finally {
       setLoading(false);
     }
@@ -98,7 +95,7 @@ export default function WorkspacePage() {
     }
   }, [slug, fetchWorkspaceAndTasks]);
 
-  // Early return for loading and error states
+  // Early return for loading state
   if (loading) {
     return (
       <div className="space-y-4">
@@ -110,10 +107,6 @@ export default function WorkspacePage() {
         </div>
       </div>
     );
-  }
-
-  if (error) {
-    return <div className="text-red-500">{error}</div>;
   }
 
   if (!workspace) {

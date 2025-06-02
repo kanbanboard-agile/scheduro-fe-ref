@@ -4,11 +4,11 @@ export function TaskStatusBadge({ status }) {
   const getStatusStyles = () => {
     switch (status) {
       case STATUS.TODO:
-        return "bg-blue-500 text-white";
+        return "bg-[#354273] text-white";
       case STATUS.ONGOING:
-        return "bg-blue-600 text-white";
+        return "bg-[#5171C7] text-white";
       case STATUS.DONE:
-        return "bg-blue-800 text-white";
+        return "bg-[#BBB1E0] text-white";
       default:
         return "bg-gray-200 text-gray-800";
     }

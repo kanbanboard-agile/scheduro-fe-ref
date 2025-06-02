@@ -49,7 +49,7 @@ export function ToDoListCard() {
               workspaceSlug: workspace?.data?.slug || '#',
             };
           } catch (err) {
-            console.warn(`Failed to fetch workspace for task ${item.id}:`, err); // Debugging
+            // console.warn(`Failed to fetch workspace for task ${item.id}:`, err); // Debugging
             return {
               ...item,
               workspaceName: 'Unknown',
@@ -75,7 +75,7 @@ export function ToDoListCard() {
         setTasks([]);
       }
     } catch (err) {
-      console.error('Failed to load tasks:', err); // Debugging
+      // console.error('Failed to load tasks:', err); // Debugging
       setError('Failed to load tasks. Please try again.');
       setTasks([]);
     } finally {

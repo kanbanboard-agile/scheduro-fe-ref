@@ -1,13 +1,13 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import IllustrationSection from '@/components/auth/IllustrationSection';
 import { useAuth } from '@/lib/AuthContext';
 import Link from 'next/link';
 
 export default function VerifyOTPPage() {
   const [otp, setOtp] = useState(['', '', '', '', '']);
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { verifyResetOTP } = useAuth();
   const router = useRouter();
@@ -35,7 +35,6 @@ export default function VerifyOTPPage() {
     if (otp.every((digit) => digit !== '')) {
       const verifyCode = async () => {
         setIsLoading(true);
-        setError('');
         const email = localStorage.getItem('resetEmail');
         const otpCode = otp.join('');
 
@@ -47,7 +46,8 @@ export default function VerifyOTPPage() {
           }
           router.push('/forget/resetpassword');
         } catch (err) {
-          setError(err.message || 'Invalid or expired OTP. Please try again.');
+          const errorMessage = err.response?.data?.message || err.message || 'Invalid or expired OTP. Please try again.';
+          toast.error(errorMessage);
           setOtp(['', '', '', '', '']);
           inputRefs.current[0].focus();
         } finally {
@@ -70,7 +70,6 @@ export default function VerifyOTPPage() {
       <div className="flex flex-col justify-center items-center w-full max-w-md mx-auto p-4">
         <div className="w-full">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Enter Verification Code</h2>
-          {error && <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">{error}</div>}
           <div className="flex justify-center space-x-2 mb-6">
             {otp.map((digit, index) => (
               <input

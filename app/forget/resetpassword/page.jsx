@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import IllustrationSection from '@/components/auth/IllustrationSection';
 import { useAuth } from '@/lib/AuthContext';
 import Link from 'next/link';
@@ -8,20 +9,16 @@ import Link from 'next/link';
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { confirmPasswordReset } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('');
-    setError('');
     setIsLoading(true);
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      toast.error('Passwords do not match.');
       setIsLoading(false);
       return;
     }
@@ -33,14 +30,15 @@ export default function ResetPasswordPage() {
         throw new Error('Reset token is missing. Please try resetting again.');
       }
       await confirmPasswordReset({ token, password });
-      setMessage('Password reset successfully. Redirecting to login...');
+      toast.success('Password reset successfully. Redirecting to login...');
       localStorage.removeItem('resetEmail');
       localStorage.removeItem('resetToken');
       setTimeout(() => {
         router.push('/login');
       }, 2000);
     } catch (err) {
-      setError(err.message || 'Failed to reset password. Please try again.');
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to reset password. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -57,8 +55,6 @@ export default function ResetPasswordPage() {
       <div className="flex flex-col justify-center items-center w-full max-w-md mx-auto p-4">
         <div className="w-full">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Reset Your Password</h2>
-          {message && <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">{message}</div>}
-          {error && <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">{error}</div>}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
