@@ -76,8 +76,8 @@ export function GenerateTaskForm({ onSuccess, workspaceId, token }) {
 
   // Function to wait for AI results with better UX
   const waitForAICompletion = async (originalPayload, processingToast) => {
-    const waitTime = 10000; // Wait 15 seconds
-    let countdown = 10;
+    const waitTime = 7000; // Wait 15 seconds
+    let countdown = 7;
 
     setProcessingStep('AI is processing your request...');
     
