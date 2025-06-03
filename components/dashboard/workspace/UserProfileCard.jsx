@@ -60,7 +60,7 @@ export function UserProfileCard({ isLoading, user }) {
                   className="w-14 h-14 mx-auto rounded-full"
                   alt="User avatar"
                   onError={(e) => {
-                    // console.error('Failed to load avatar:', user?.avatar);
+                    // //console.error('Failed to load avatar:', user?.avatar);
                     e.target.src = 'https://res.cloudinary.com/dy8fe8tbe/image/upload/v1742238102/user_profile_grka1i.svg';
                   }}
                 />
@@ -105,7 +105,7 @@ export function UserProfileCard({ isLoading, user }) {
               aria-label="Open profile"
               tabIndex={0}
               onError={(e) => {
-                // console.error('Failed to load avatar:', user?.avatar);
+                // //console.error('Failed to load avatar:', user?.avatar);
                 e.target.src = 'https://res.cloudinary.com/dy8fe8tbe/image/upload/v1742238102/user_profile_grka1i.svg';
               }}
             />

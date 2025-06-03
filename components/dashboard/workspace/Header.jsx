@@ -10,7 +10,7 @@ import GenerateTaskButton from '@/components/dashboard/Task/GenerateTaskButton';
 
 // Memoized Avatar component to prevent unnecessary re-renders
 const WorkspaceAvatar = memo(({ name, avatar, onUpload, workspaceId }) => {
-  // console.log('Avatar URL in WorkspaceAvatar:', avatar);
+  // //console.log('Avatar URL in WorkspaceAvatar:', avatar);
   const [imgError, setImgError] = useState(false);
 
   return (
@@ -21,7 +21,7 @@ const WorkspaceAvatar = memo(({ name, avatar, onUpload, workspaceId }) => {
           alt={`${name} Avatar`}
           className="h-20 w-20 md:h-24 md:w-24 rounded-full ring-4 ring-white object-cover shadow-md"
           onError={(e) => {
-            // console.error('Image failed to load:', avatar);
+            // //console.error('Image failed to load:', avatar);
             setImgError(true);
           }}
         />
@@ -61,7 +61,7 @@ const DeleteDialog = memo(({ isOpen, onClose, onDelete }) => {
 DeleteDialog.displayName = 'DeleteDialog';
 
 // Main Header component with performance optimizations
-const Header = ({ workspace, onUpdate }) => {
+const Header = ({ workspace, onUpdate, onTasksGenerated }) => {
   const [randomImage, setRandomImage] = useState('');
   // Use workspace.logoUrl to match your sidebar component naming
   const [avatar, setAvatar] = useState(workspace?.logoUrl || null);
@@ -72,7 +72,7 @@ const Header = ({ workspace, onUpdate }) => {
 
   // Debug workspace object
   useEffect(() => {
-    // console.log('Workspace object:', workspace);
+    // //console.log('Workspace object:', workspace);
   }, [workspace]);
 
   // Load random image on mount
@@ -106,12 +106,12 @@ const Header = ({ workspace, onUpdate }) => {
             logo: file,
           });
 
-          // console.log('Image upload response:', response);
+          // //console.log('Image upload response:', response);
 
           if (response.success) {
             // Use logoUrl to match your sidebar component naming
             const serverLogoUrl = response.data.logoUrl || response.data.logo;
-            // console.log('Logo URL set to:', serverLogoUrl);
+            // //console.log('Logo URL set to:', serverLogoUrl);
 
             if (serverLogoUrl) {
               setAvatar(serverLogoUrl);
@@ -125,7 +125,7 @@ const Header = ({ workspace, onUpdate }) => {
               toast.success('Workspace logo updated successfully!');
               onUpdate(updatedWorkspace);
             } else {
-              // console.error('No logo URL returned from server');
+              // //console.error('No logo URL returned from server');
               toast.error('Server did not return a valid logo URL');
             }
           } else {
@@ -137,7 +137,7 @@ const Header = ({ workspace, onUpdate }) => {
           toast.error('An error occurred while uploading the logo: ' + (error.message || 'Unknown error'));
           // Revert to original logo if available
           setAvatar(workspace.logoUrl || null);
-          // console.error('Logo upload error:', error);
+          // //console.error('Logo upload error:', error);
         } finally {
           // Clean up the temporary object URL
           URL.revokeObjectURL(temporaryPreview);
@@ -290,7 +290,10 @@ const Header = ({ workspace, onUpdate }) => {
 
         {/* AI Generate Task Button */}
         <div className="mt-12 md:mt-14">
-          <GenerateTaskButton workspaceId={workspace.id} />
+          <GenerateTaskButton 
+            workspaceId={workspace.id} 
+            onTasksGenerated={onTasksGenerated}
+          />
         </div>
       </div>
     </div>

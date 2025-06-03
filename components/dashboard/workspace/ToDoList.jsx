@@ -28,7 +28,7 @@ export function ToDoListCard() {
 
     try {
       const response = await getUserTasks(user.id);
-      // console.log('API Response:', response); // Debugging: Lihat respons API
+      // //console.log('API Response:', response); // Debugging: Lihat respons API
 
       if (response.success && response.data.length > 0) {
         // Ambil detail workspace untuk setiap tugas
@@ -49,7 +49,7 @@ export function ToDoListCard() {
               workspaceSlug: workspace?.data?.slug || '#',
             };
           } catch (err) {
-            // console.warn(`Failed to fetch workspace for task ${item.id}:`, err); // Debugging
+            // //console.warn(`Failed to fetch workspace for task ${item.id}:`, err); // Debugging
             return {
               ...item,
               workspaceName: 'Unknown',
@@ -65,17 +65,17 @@ export function ToDoListCard() {
           .filter((task) => {
             // Filter hanya tugas dengan status TODO, case-insensitive
             const isTodo = task && task.id && task.status?.toLowerCase() === STATUS.TODO.toLowerCase();
-            // console.log(`Task ${task?.id}: status=${task?.status}, isTodo=${isTodo}`); // Debugging
+            // //console.log(`Task ${task?.id}: status=${task?.status}, isTodo=${isTodo}`); // Debugging
             return isTodo;
           });
 
-        // console.log('Filtered TODO Tasks:', formattedTasks); // Debugging
+        // //console.log('Filtered TODO Tasks:', formattedTasks); // Debugging
         setTasks(formattedTasks);
       } else {
         setTasks([]);
       }
     } catch (err) {
-      // console.error('Failed to load tasks:', err); // Debugging
+      // //console.error('Failed to load tasks:', err); // Debugging
       setError('Failed to load tasks. Please try again.');
       setTasks([]);
     } finally {

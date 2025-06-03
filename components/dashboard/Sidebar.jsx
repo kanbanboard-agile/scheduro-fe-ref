@@ -72,7 +72,7 @@ export function DashboardSidebar() {
       // Immediate redirect to home page
       window.location.href = '/';
     } catch (error) {
-      console.error('Logout error:', error);
+      //console.error('Logout error:', error);
       // Still redirect to home page even if there's an error
       window.location.href = '/';
     } finally {

@@ -8,7 +8,7 @@ import { GenerateTaskForm } from "./GenerateTaskForm"
 import { useAuth } from "@/lib/AuthContext"
 import { getAuthToken } from "@/lib/cookieUtils"
 
-export function GenerateTaskButton({ workspaceId }) {
+export function GenerateTaskButton({ workspaceId, onTasksGenerated }) {
   const [isOpen, setIsOpen] = useState(false)
   const { user } = useAuth()
 
@@ -16,6 +16,13 @@ export function GenerateTaskButton({ workspaceId }) {
   const getToken = () => {
     const cookieToken = getAuthToken()
     return cookieToken || user?.token
+  }
+
+  const handleSuccess = (generatedTasks) => {
+    setIsOpen(false)
+    if (onTasksGenerated) {
+      onTasksGenerated(generatedTasks)
+    }
   }
 
   return (
@@ -36,7 +43,7 @@ export function GenerateTaskButton({ workspaceId }) {
           </DialogTitle>
         </DialogHeader>
         <GenerateTaskForm 
-          onSuccess={() => setIsOpen(false)} 
+          onSuccess={handleSuccess} 
           workspaceId={workspaceId || "1"}
           token={getToken()}
         />

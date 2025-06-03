@@ -35,19 +35,6 @@ export default function WorkspacePage() {
   const [taskData, setTaskData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Format tasks into columns - memoized to prevent unnecessary recalculations
-  const tasks = useMemo(() => {
-    if (!taskData.length) {
-      return { 'To Do': [], Ongoing: [], Done: [] };
-    }
-
-    return {
-      'To Do': taskData.filter((task) => task.status === 'To Do').sort(sortTasksByDeadline),
-      Ongoing: taskData.filter((task) => task.status === 'Ongoing' || task.status === 'In Progress').sort(sortTasksByDeadline),
-      Done: taskData.filter((task) => task.status === 'Done').sort(sortTasksByDeadline),
-    };
-  }, [taskData]);
-
   // Memoized fetch function to avoid recreation on rerenders
   const fetchWorkspaceAndTasks = useCallback(async () => {
     if (!slug) return;
@@ -88,6 +75,63 @@ export default function WorkspacePage() {
     }
   }, [slug]);
 
+  // Handle newly generated tasks - defined after fetchWorkspaceAndTasks to avoid initialization error
+  const handleTasksGenerated = useCallback((newTasks) => {
+    //console.log('handleTasksGenerated called with:', newTasks);
+    //console.log('Current taskData before update:', taskData);
+    
+    if (newTasks === 'refresh_needed') {
+      // Special case: AI has generated tasks but we need to refresh data
+      //console.log('Refreshing task data due to AI generation...');
+      const refreshToast = toast.loading('Refreshing tasks...', { duration: 30000 });
+      
+      // Trigger a data refresh after a short delay and wait for completion
+      setTimeout(async () => {
+        try {
+          await fetchWorkspaceAndTasks();
+          toast.dismiss(refreshToast);
+          toast.success('Tasks refreshed successfully!');
+        } catch (error) {
+          toast.dismiss(refreshToast);
+          toast.error('Failed to refresh tasks');
+          //console.error('Refresh error:', error);
+        }
+      }, 2000);
+      
+      return;
+    }
+    
+    if (newTasks && Array.isArray(newTasks)) {
+      setTaskData((currentTasks) => {
+        const updatedTasks = [...currentTasks, ...newTasks];
+        //console.log('Updated taskData:', updatedTasks);
+        return updatedTasks;
+      });
+      
+      // Show success toast about the update
+      toast.success(`Added ${newTasks.length} new tasks to the board!`);
+    }
+  }, [fetchWorkspaceAndTasks]); // Removed taskData dependency to avoid stale closure
+
+  // Format tasks into columns - memoized to prevent unnecessary recalculations
+  const tasks = useMemo(() => {
+    //console.log('Computing tasks object from taskData:', taskData);
+    
+    if (!taskData.length) {
+      //console.log('No taskData, returning empty columns');
+      return { 'To Do': [], Ongoing: [], Done: [] };
+    }
+
+    const formattedTasks = {
+      'To Do': taskData.filter((task) => task.status === 'To Do').sort(sortTasksByDeadline),
+      Ongoing: taskData.filter((task) => task.status === 'Ongoing' || task.status === 'In Progress').sort(sortTasksByDeadline),
+      Done: taskData.filter((task) => task.status === 'Done').sort(sortTasksByDeadline),
+    };
+    
+    //console.log('Formatted tasks for Kanban:', formattedTasks);
+    return formattedTasks;
+  }, [taskData]);
+
   // Effect for data fetching - runs only when slug changes
   useEffect(() => {
     if (slug) {
@@ -119,7 +163,11 @@ export default function WorkspacePage() {
       {/* Provide rendering hint to the browser */}
       <div style={{ content: 'priority' }}></div>
       <div>
-        <Header workspace={workspace} onUpdate={setWorkspace} />
+        <Header 
+          workspace={workspace} 
+          onUpdate={setWorkspace} 
+          onTasksGenerated={handleTasksGenerated}
+        />
         <KanbanPage workspace={workspace} tasks={tasks} />
       </div>
     </>

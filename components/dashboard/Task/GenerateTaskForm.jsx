@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Sparkles, CheckCircle, XCircle, Clock, Calendar, Loader2 } from 'lucide-react';
 import { createTask } from '@/lib/api/task';
 import { getAuthToken } from '@/lib/cookieUtils';
-import { useAuth } from '@/lib/AuthContext';
 import { toast } from 'sonner';
+import { useAuth } from '@/lib/AuthContext';
 
 export function GenerateTaskForm({ onSuccess, workspaceId, token }) {
   const { user } = useAuth();
@@ -25,58 +25,137 @@ export function GenerateTaskForm({ onSuccess, workspaceId, token }) {
 
   // Function to save generated tasks to database
   const saveTasksToDatabase = async (tasks) => {
-    if (!tasks || !Array.isArray(tasks)) return;
+    if (!tasks || !Array.isArray(tasks)) return [];
 
     setIsSaving(true);
-    const savedTasks = [];
+    const savedTasksArray = [];
     let failedTasks = 0;
 
     try {
+      //console.log('Saving tasks to database:', tasks);
+      
       for (const task of tasks) {
-        const taskData = {
-          title: task.title || task.name || `Generated Task`,
-          description: task.description || description,
-          status: 'todo',
-          priority: task.priority || 'medium',
-          workspace: workspaceId,
-          deadline: task.deadline || null,
-        };
-
         try {
-          const savedTask = await createTask(taskData);
-          savedTasks.push(savedTask);
-        } catch (taskError) {
-          console.error('Error saving individual task:', taskError);
+          const taskPayload = {
+            title: task.title || task.name || 'Generated Task',
+            description: task.description || '',
+            deadline: task.deadline || null,
+            priority: task.priority || 'Medium',
+            status: 'To Do',
+            workspace: parseInt(workspaceId)
+          };
+
+          //console.log('Saving task payload:', taskPayload);
+          
+          const savedTask = await createTask(taskPayload);
+          //console.log('Task saved successfully:', savedTask);
+          
+          if (savedTask && savedTask.data) {
+            savedTasksArray.push(savedTask.data);
+          } else if (savedTask) {
+            savedTasksArray.push(savedTask);
+          }
+        } catch (error) {
+          //console.error('Error saving individual task:', error);
           failedTasks++;
         }
       }
 
-      if (savedTasks.length > 0) {
-        // Update UI to show saved status
-        setGeneratedTask((prev) => ({
-          ...prev,
-          savedTasks: savedTasks,
-          savedCount: savedTasks.length,
-          failedCount: failedTasks,
-        }));
+      setSavedTasks(savedTasksArray);
+      
+      //console.log(`Successfully saved ${savedTasksArray.length} tasks, failed: ${failedTasks}`);
 
-        setSavedTasks(savedTasks);
-
-        // Success message based on results
-        if (failedTasks === 0) {
-          toast.success(`✅ All ${savedTasks.length} tasks saved successfully!`);
-        } else {
-          toast.warning(`⚠️ ${savedTasks.length} tasks saved, ${failedTasks} failed`);
-        }
-      } else {
-        toast.error('❌ Failed to save any tasks to database');
-      }
+      return savedTasksArray;
     } catch (error) {
-      console.error('Error saving tasks to database:', error);
-      toast.error('❌ Failed to save tasks to database');
+      //console.error('Error saving tasks to database:', error);
+      return [];
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // Function to wait for AI results with better UX
+  const waitForAICompletion = async (originalPayload, processingToast) => {
+    const waitTime = 10000; // Wait 15 seconds
+    let countdown = 10;
+
+    setProcessingStep('AI is processing your request...');
+    
+    // Show countdown to user
+    const countdownInterval = setInterval(() => {
+      countdown--;
+      setProcessingStep(`AI is processing your request... (${countdown}s remaining)`);
+    }, 1000);
+
+    // Wait for AI to complete (estimated time)
+    setTimeout(async () => {
+      clearInterval(countdownInterval);
+      
+      // Dismiss the processing toast before showing success message
+      if (processingToast) {
+        toast.dismiss(processingToast);
+      }
+      
+      // Since we can't poll due to CORS, we'll show a success message
+      // and let the parent component refresh the data
+      setProcessingStep('AI processing completed!');
+      
+      // Show success message and trigger callback
+      toast.success('🎉 AI has generated your tasks! Refreshing the workspace...');
+      
+      setIsGenerating(false);
+      setProcessingStep('');
+      
+      // Call the success callback to trigger data refresh
+      if (onSuccess) {
+        // Pass a flag indicating tasks were generated but need refresh
+        setTimeout(() => {
+          onSuccess('refresh_needed');
+        }, 1000);
+      }
+      
+    }, waitTime);
+  };
+
+  // Function to handle tasks result
+  const handleTasksResult = async (result) => {
+    setGeneratedTask(result);
+
+    // Auto save tasks to database
+    let actualSavedTasks = [];
+    if (result && result.tasks && Array.isArray(result.tasks)) {
+      setProcessingStep('Saving tasks to database...');
+      actualSavedTasks = await saveTasksToDatabase(result.tasks);
+
+      // Update the generated task with save info
+      setGeneratedTask((prev) => ({
+        ...prev,
+        savedCount: actualSavedTasks.length,
+        failedCount: result.tasks.length - actualSavedTasks.length,
+      }));
+    }
+
+    // Show success toast with actual saved count
+    if (actualSavedTasks.length > 0) {
+      toast.success(`✅ Successfully generated and saved ${actualSavedTasks.length} tasks!`);
+
+      // Call onSuccess with the saved tasks
+      if (onSuccess) {
+        //console.log('Calling onSuccess with tasks:', actualSavedTasks);
+        setTimeout(() => {
+          onSuccess(actualSavedTasks);
+        }, 1000);
+      }
+    } else if (result.tasks && result.tasks.length > 0) {
+      toast.warning(`⚠️ Generated ${result.tasks.length} tasks but failed to save them`);
+      //console.warn('Failed to save tasks:', result.tasks);
+    } else {
+      toast.error('❌ No tasks were generated');
+      //console.error('No tasks in result:', result);
+    }
+
+    setIsGenerating(false);
+    setProcessingStep('');
   };
 
   const handleGenerateTask = async () => {
@@ -111,25 +190,24 @@ export function GenerateTaskForm({ onSuccess, workspaceId, token }) {
     setSavedTasks([]);
     setProcessingStep('Preparing request...');
 
-    // Show loading toast
-    const loadingToast = toast.loading('🤖 Generating tasks with AI...');
+    const loadingToast = toast.loading('🤖 AI is generating your tasks...');
 
     try {
       setProcessingStep('Connecting to AI service...');
-
-      // URL webhook n8n yang sudah dikonfigurasi
-      const webhookUrl = 'https://n8n-9hlhd9ec.sumopod.biz.id/webhook/76de89dc-4784-49c0-904d-85ecd554a035';
 
       const payload = {
         description: description.trim(),
         section: section,
         steps: steps,
-        workspaceId: parseInt(workspaceId), // Ensure workspaceId is a number
-        user_id: user.id, // Add user_id to the payload
+        workspaceId: parseInt(workspaceId),
+        user_id: user.id,
         token: authToken,
       };
 
       setProcessingStep('Sending request to AI...');
+
+      // Direct webhook call
+      const webhookUrl = 'https://n8n-9hlhd9ec.sumopod.biz.id/webhook/76de89dc-4784-49c0-904d-85ecd554a035';
 
       const response = await fetch(webhookUrl, {
         method: 'POST',
@@ -141,80 +219,50 @@ export function GenerateTaskForm({ onSuccess, workspaceId, token }) {
           'X-Request-Source': 'scheduro-frontend',
         },
         body: JSON.stringify(payload),
-        mode: 'cors', // Add CORS mode
-        cache: 'no-cache', // Disable caching
+        mode: 'cors',
+        cache: 'no-cache',
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to generate task'}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       setProcessingStep('Processing AI response...');
       const result = await response.json();
-      setGeneratedTask(result);
+      
+      //console.log('AI Service Response:', result);
 
-      // Dismiss loading toast
-      toast.dismiss(loadingToast);
+      // Check if this is a workflow start response
+      if (result.message === 'Workflow was started') {
+        // Dismiss the initial loading toast
+        toast.dismiss(loadingToast);
+        
+        // Show a different message for async workflow with stored reference
+        const processingToast = toast.loading('🔄 AI is processing your request, please wait...', {
+          duration: 20000, // Show for up to 20 seconds (5 seconds buffer)
+        });
 
-      // Auto save tasks to database if result contains tasks
-      if (result && result.tasks && Array.isArray(result.tasks)) {
-        setProcessingStep('Saving tasks to database...');
-        toast.loading('💾 Saving tasks to database...');
-        await saveTasksToDatabase(result.tasks);
-        toast.dismiss();
-        toast.success(`✅ Successfully generated and saved ${result.tasks.length} tasks!`);
+        // Wait for AI completion instead of polling
+        await waitForAICompletion(payload, processingToast);
+      } else if (result && result.tasks && Array.isArray(result.tasks)) {
+        // Direct response with tasks
+        await handleTasksResult(result);
+        toast.dismiss(loadingToast);
       } else {
-        toast.success('✅ Tasks generated successfully!');
+        // Unexpected response format
+        toast.dismiss(loadingToast);
+        toast.error('❌ Unexpected response from AI service');
+        //console.error('Unexpected result format:', result);
       }
 
-      if (onSuccess) {
-        setTimeout(onSuccess, 2000);
-      }
     } catch (error) {
-      // Dismiss loading toast
-      toast.dismiss(loadingToast);
-      toast.error(error.message || 'Failed to generate task. Please try again.');
-
-      // For now, let's create a mock response to test the UI
-      if (error.message.includes('Failed to fetch') || error.message.includes('SSL')) {
-        const mockResult = {
-          description: description,
-          section: section,
-          steps: steps,
-          tasks: [
-            {
-              title: 'Setup Project Structure',
-              description: 'Initialize the project with proper folder structure',
-              priority: 'high',
-            },
-            {
-              title: 'Install Dependencies',
-              description: 'Install required packages and libraries',
-              priority: 'medium',
-            },
-            {
-              title: 'Create Basic Components',
-              description: 'Build the core components for the application',
-              priority: 'medium',
-            },
-          ],
-        };
-
-        setGeneratedTask(mockResult);
-
-        // Auto save mock tasks to database
-        setProcessingStep('Saving mock tasks...');
-        toast.loading('💾 Saving mock tasks to database...');
-        await saveTasksToDatabase(mockResult.tasks);
-        toast.dismiss();
-        toast.success(`✅ Successfully generated and saved ${mockResult.tasks.length} mock tasks!`);
-
-        if (onSuccess) {
-          setTimeout(onSuccess, 2000);
-        }
-      }
-    } finally {
+      // Dismiss all toasts to make sure nothing lingers
+      toast.dismiss();
+      //console.error('Generation error:', error);
+      
+      // Show error to user
+      toast.error('❌ Failed to connect to AI service. Please try again.');
+      
       setIsGenerating(false);
       setProcessingStep('');
     }
@@ -335,7 +383,7 @@ export function GenerateTaskForm({ onSuccess, workspaceId, token }) {
               <p>
                 <strong>Error:</strong> {generatedTask.message}
               </p>
-              <p className="mt-2 text-xs">Check // console for more details</p>
+              <p className="mt-2 text-xs">Check // //console for more details</p>
             </div>
           ) : (
             <div className="space-y-4">

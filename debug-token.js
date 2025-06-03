@@ -1,7 +1,7 @@
 // Debug script to test token functionality
-// Run this in browser // console to debug token issues
+// Run this in browser // //console to debug token issues
 
-// // console.log("=== TOKEN DEBUG SCRIPT ===");
+// // //console.log("=== TOKEN DEBUG SCRIPT ===");
 
 // Function to get cookie (same as cookieUtils.js)
 function getCookie(name) {
@@ -23,36 +23,36 @@ function getCookie(name) {
 // Function to set test token
 function setTestToken(token = 'test-jwt-token-123456789') {
   document.cookie = `token=${token}; path=/; max-age=86400; SameSite=Lax`;
-  //   // console.log("✅ Test token set:", token.substring(0, 20) + "...");
+  //   // //console.log("✅ Test token set:", token.substring(0, 20) + "...");
 }
 
 // Function to test token retrieval
 function testTokenRetrieval() {
-  //   // console.log("\n--- TOKEN RETRIEVAL TEST ---");
+  //   // //console.log("\n--- TOKEN RETRIEVAL TEST ---");
 
   // Test native cookie retrieval
   const nativeToken = getCookie('token');
-  // console.log("Native cookie token:", nativeToken ? nativeToken.substring(0, 20) + "..." : "❌ NOT FOUND");
+  // //console.log("Native cookie token:", nativeToken ? nativeToken.substring(0, 20) + "..." : "❌ NOT FOUND");
 
   // Test js-cookie retrieval (if available)
   if (typeof Cookies !== 'undefined') {
     const jsCookieToken = Cookies.get('token')?.trim();
-    // console.log("js-cookie token:", jsCookieToken ? jsCookieToken.substring(0, 20) + "..." : "❌ NOT FOUND");
+    // //console.log("js-cookie token:", jsCookieToken ? jsCookieToken.substring(0, 20) + "..." : "❌ NOT FOUND");
   }
 
   // Show all cookies
-  // console.log("All cookies:", document.cookie);
+  // //console.log("All cookies:", document.cookie);
 
   return nativeToken;
 }
 
 // Function to test webhook call
 async function testWebhookCall() {
-  // console.log("\n--- WEBHOOK TEST ---");
+  // //console.log("\n--- WEBHOOK TEST ---");
 
   const token = getCookie('token');
   if (!token) {
-    // console.error("❌ No token found. Setting test token...");
+    // //console.error("❌ No token found. Setting test token...");
     setTestToken();
     return;
   }
@@ -67,8 +67,8 @@ async function testWebhookCall() {
 
   const webhookUrl = 'https://n8n-9hlhd9ec.sumopod.biz.id/webhook/76de89dc-4784-49c0-904d-85ecd554a035';
 
-  // console.log("Sending request to:", webhookUrl);
-  // console.log("Payload:", {
+  // //console.log("Sending request to:", webhookUrl);
+  // //console.log("Payload:", {
   //     ...payload,
   //     token: token.substring(0, 20) + "..."
   //   });
@@ -88,30 +88,30 @@ async function testWebhookCall() {
       cache: 'no-cache',
     });
 
-    // console.log("Response status:", response.status);
-    // console.log("Response headers:", Object.fromEntries(response.headers.entries()));
+    // //console.log("Response status:", response.status);
+    // //console.log("Response headers:", Object.fromEntries(response.headers.entries()));
 
     if (response.ok) {
       const result = await response.json();
-      // console.log("✅ Success! Response:", result);
+      // //console.log("✅ Success! Response:", result);
     } else {
       const errorText = await response.text();
-      // console.error("❌ Error response:", errorText);
+      // //console.error("❌ Error response:", errorText);
     }
   } catch (error) {
-    // console.error("❌ Network error:", error);
+    // //console.error("❌ Network error:", error);
   }
 }
 
 // Function to test API call
 async function testApiCall() {
-  // console.log("\n--- API CALL TEST ---");
+  // //console.log("\n--- API CALL TEST ---");
 
   const baseUrl = window.location.origin; // Use current origin
   const token = getCookie('token');
 
   if (!token) {
-    // console.error("❌ No token found for API test");
+    // //console.error("❌ No token found for API test");
     return;
   }
 
@@ -125,23 +125,23 @@ async function testApiCall() {
       credentials: 'include',
     });
 
-    // console.log("API Response status:", response.status);
+    // //console.log("API Response status:", response.status);
 
     if (response.ok) {
       const result = await response.json();
-      // console.log("✅ API Success:", result);
+      // //console.log("✅ API Success:", result);
     } else {
       const errorText = await response.text();
-      // console.log("API Error:", errorText);
+      // //console.log("API Error:", errorText);
     }
   } catch (error) {
-    // console.error("❌ API Network error:", error);
+    // //console.error("❌ API Network error:", error);
   }
 }
 
 // Run all tests
 async function runAllTests() {
-  // console.log("🚀 Starting comprehensive token debug...\n");
+  // //console.log("🚀 Starting comprehensive token debug...\n");
 
   // Test 1: Token retrieval
   const token = testTokenRetrieval();
@@ -158,12 +158,12 @@ async function runAllTests() {
   // Test 4: API call
   await testApiCall();
 
-  // console.log("\n🏁 Debug tests completed!");
+  // //console.log("\n🏁 Debug tests completed!");
 }
 
 // Auto-run on script load
 if (typeof window !== 'undefined') {
-  // console.log("Debug script loaded. Run 'runAllTests()' to start debugging.");
+  // //console.log("Debug script loaded. Run 'runAllTests()' to start debugging.");
 
   // Expose functions globally for manual testing
   window.debugToken = {

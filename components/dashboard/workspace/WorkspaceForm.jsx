@@ -57,7 +57,7 @@ export function WorkspaceForm({ onWorkspaceAdded }) {
       toast.success(response.message || 'Workspace created successfully');
       setOpen(false);
     } catch (error) {
-      console.error('Error creating workspace:', error);
+      //console.error('Error creating workspace:', error);
       toast.error(error.message || 'Failed to create workspace');
       if (error.response?.data?.message) {
         setErrors({ server: error.response.data.message });

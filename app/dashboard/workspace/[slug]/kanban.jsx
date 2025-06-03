@@ -2,7 +2,7 @@
 
 import { DndContext, useSensor, useSensors, KeyboardSensor, MouseSensor, TouchSensor, DragOverlay, defaultDropAnimationSideEffects } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import KanbanColumn from '@/components/dashboard/workspace/KanbanColumn';
 import TaskCard from '@/components/dashboard/Task/TaskCard';
 import { updateTask } from '@/lib/api/task';
@@ -46,6 +46,17 @@ export default function KanbanPage({ workspace, tasks: initialTasks }) {
 
   const [tasks, setTasks] = useState(initialTaskState);
   const [activeTask, setActiveTask] = useState(null);
+
+  // Sync tasks when initialTasks changes (for new generated tasks)
+  useEffect(() => {
+    //console.log('KanbanPage useEffect - initialTasks changed:', initialTasks);
+    //console.log('Current tasks state:', tasks);
+    
+    if (initialTasks) {
+      setTasks(initialTasks);
+      //console.log('Updated tasks state to:', initialTasks);
+    }
+  }, [initialTasks]);
 
   // Optimized sensors with higher activation thresholds to reduce false triggers
   const mouseSensor = useSensor(MouseSensor, {
