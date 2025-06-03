@@ -8,7 +8,7 @@ import { useAuth } from '@/lib/AuthContext';
 export default function RegisterPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  // const [turnstileVerified, setTurnstileVerified] = useState(false);
+  const [turnstileVerified, setTurnstileVerified] = useState(false);
   const [turnstileError, setTurnstileError] = useState(null);
 
   // Alihkan ke dashboard jika sudah terautentikasi
@@ -19,31 +19,31 @@ export default function RegisterPage() {
   }, [user, loading, router]);
 
   // Muat skrip Turnstile dan render widget
-  // useEffect(() => {
-  //   const script = document.createElement('script');
-  //   script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
-  //   script.async = true;
-  //   script.defer = true;
-  //   document.body.appendChild(script);
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
 
-  //   script.onload = () => {
-  //     if (window.turnstile) {
-  //       window.turnstile.render('#turnstile-widget', {
-  //         sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
-  //         callback: () => {
-  //           setTurnstileVerified(true);
-  //         },
-  //         'error-callback': () => {
-  //           setTurnstileError('Try Again Bro!');
-  //         },
-  //       });
-  //     }
-  //   };
+    script.onload = () => {
+      if (window.turnstile) {
+        window.turnstile.render('#turnstile-widget', {
+          sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+          callback: () => {
+            setTurnstileVerified(true);
+          },
+          'error-callback': () => {
+            setTurnstileError('Try Again Bro!');
+          },
+        });
+      }
+    };
 
-  //   return () => {
-  //     document.body.removeChild(script);
-  //   };
-  // }, []);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   // Jika loading atau sudah terautentikasi, jangan tampilkan apa-apa
   if (loading || user) {
@@ -60,14 +60,14 @@ export default function RegisterPage() {
   }
 
   // Jika belum terverifikasi, hanya tampilkan widget Turnstile
-  // if (!turnstileVerified) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center flex-col gap-4">
-  //       <div id="turnstile-widget"></div>
-  //       <p>Memverifikasi...</p>
-  //     </div>
-  //   );
-  // }
+  if (!turnstileVerified) {
+    return (
+      <div className="min-h-screen flex items-center justify-center flex-col gap-4">
+        <div id="turnstile-widget"></div>
+        <p>Memverifikasi...</p>
+      </div>
+    );
+  }
 
   // Jika terverifikasi, tampilkan halaman registrasi
   return (

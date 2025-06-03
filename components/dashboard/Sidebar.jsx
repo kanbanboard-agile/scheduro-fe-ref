@@ -37,17 +37,7 @@ export function DashboardSidebar() {
     try {
       const response = await getUserWorkspaces(user.id);
       if (response.success) {
-        const validWorkspaces = response.data
-          .map((item) => item.workspace)
-          .filter((workspace) => workspace && typeof workspace === 'object')
-          .map((workspace) => ({
-            id: workspace.id || Date.now(),
-            name: workspace.name || 'Untitled Workspace',
-            slug: workspace.slug || (workspace.name || 'untitled').toLowerCase().replace(/\s+/g, '-'),
-            priority: workspace.priority || 'Low',
-            logoUrl: workspace.logoUrl || null,
-          }));
-        setWorkspaces(validWorkspaces);
+        setWorkspaces(response.data.map((item) => item.workspace));
       } else {
         setError('Failed to fetch workspaces from API');
       }
@@ -65,17 +55,7 @@ export function DashboardSidebar() {
   }, [user, fetchWorkspaces]);
 
   const handleWorkspaceAdded = useCallback((newWorkspace) => {
-    // Ensure the workspace has required properties before adding
-    if (newWorkspace && typeof newWorkspace === 'object') {
-      const validWorkspace = {
-        id: newWorkspace.id || Date.now(),
-        name: newWorkspace.name || 'Untitled Workspace',
-        slug: newWorkspace.slug || (newWorkspace.name || 'untitled').toLowerCase().replace(/\s+/g, '-'),
-        priority: newWorkspace.priority || 'Low',
-        logoUrl: newWorkspace.logoUrl || null,
-      };
-      setWorkspaces((prev) => [...prev, validWorkspace]);
-    }
+    setWorkspaces((prev) => [...prev, newWorkspace]);
   }, []);
 
   // Updated logout handler with immediate redirect
@@ -92,6 +72,7 @@ export function DashboardSidebar() {
       // Immediate redirect to home page
       window.location.href = '/';
     } catch (error) {
+      console.error('Logout error:', error);
       // Still redirect to home page even if there's an error
       window.location.href = '/';
     } finally {
@@ -210,8 +191,8 @@ export function DashboardSidebar() {
                         ) : (
                           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-white text-[0.625rem] font-medium border-foreground text-foreground">{workspace.name?.charAt(0).toUpperCase() || 'W'}</span>
                         )}
-                        <span className="truncate" title={workspace.name || 'Untitled Workspace'}>
-                          {(workspace.name?.length || 0) > 20 ? `${workspace.name.substring(0, 20)}...` : (workspace.name || 'Untitled Workspace')}
+                        <span className="truncate" title={workspace.name}>
+                          {workspace.name.length > 20 ? `${workspace.name.substring(0, 20)}...` : workspace.name}
                         </span>
                       </div>
                       <Badge variant="outline" className={cn('ml-auto text-xs font-medium', ...getPriorityBadgeStyles(workspace.priority))}>
